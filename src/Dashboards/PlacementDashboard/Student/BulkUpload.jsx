@@ -1,7 +1,8 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { Upload, FileText, AlertCircle, CheckCircle, Download, Users } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -14,15 +15,18 @@ const BulkUpload = ({
 }) => {
   const { universityName } = useParams();
   const [file, setFile] = useState(null);
-  const [convertedFile, setConvertedFile] = useState(null); // For storing the converted CSV file
-  const [collegeId, setCollegeId] = useState("");
-  const [departmentId, setDepartmentId] = useState("");
-  const [programId, setProgramId] = useState("");
+  const [convertedFile, setConvertedFile] = useState(null);
+  const [formData, setFormData] = useState({
+    collegeId: "",
+    departmentId: "",
+    programId: "",
+  });
   const [fileError, setFileError] = useState(null);
-  const [loading, setLoading] = useState(false); // Track upload status
-  const [uploadResult, setUploadResult] = useState(null); // Store API response
-  const [showModal, setShowModal] = useState(false); // Control modal visibility
+  const [loading, setLoading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const [reasons, setReasons] = useState([]);
+  const [dragActive, setDragActive] = useState(false);
 
   const token = localStorage.getItem("University authToken");
 
@@ -31,16 +35,47 @@ const BulkUpload = ({
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ];
 
-  const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
+  const requiredColumns = [
+    "Name",
+    "Registered Number", 
+    "Email",
+    "Phone",
+    "Enrollment Year",
+    "Graduation Year"
+  ];
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelection(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileSelection(e.target.files[0]);
+    }
+  };
+
+  const handleFileSelection = (selectedFile) => {
     if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
       setFile(selectedFile);
       setFileError(null);
 
-      if (
-        selectedFile.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      ) {
+      if (selectedFile.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
         convertToCSV(selectedFile);
       } else {
         setConvertedFile(null);
@@ -58,11 +93,9 @@ const BulkUpload = ({
       const data = new Uint8Array(event.target.result);
       const workbook = XLSX.read(data, { type: "array" });
 
-      // Convert the first sheet to CSV
       const sheetName = workbook.SheetNames[0];
       const csvData = XLSX.utils.sheet_to_csv(workbook.Sheets[sheetName]);
 
-      // Convert CSV data into a Blob
       const csvFile = new Blob([csvData], { type: "text/csv" });
       setConvertedFile(
         new File([csvFile], `${file.name.split(".")[0]}.csv`, {
@@ -74,31 +107,60 @@ const BulkUpload = ({
     reader.readAsArrayBuffer(file);
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const downloadTemplate = () => {
+    const templateData = [requiredColumns];
+    const sampleData = [
+      "John Doe",
+      "REG001",
+      "john.doe@example.com", 
+      "9876543210",
+      "2020",
+      "2024"
+    ];
+    templateData.push(sampleData);
+
+    const worksheet = XLSX.utils.aoa_to_sheet(templateData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Student Template");
+    XLSX.writeFile(workbook, "student_upload_template.xlsx");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const uploadFile = convertedFile || file;
 
-    if (!uploadFile) return alert("Please upload a file!");
-    if (!universityId || !collegeId || !departmentId || !programId) {
-      return alert(
-        "Please fill all ID fields (University, College, Department, and Program)."
-      );
+    if (!uploadFile) {
+      alert("Please upload a file!");
+      return;
+    }
+    
+    if (!universityId || !formData.collegeId || !formData.departmentId || !formData.programId) {
+      alert("Please fill all required fields (University, College, Department, and Program).");
+      return;
     }
 
-    setLoading(true); // Show loading message
+    setLoading(true);
     setUploadResult(null);
 
-    const formData = new FormData();
-    formData.append("file", uploadFile);
-    formData.append("universityId", universityId);
-    formData.append("collegeId", collegeId);
-    formData.append("departmentId", departmentId);
-    formData.append("programId", programId);
+    const submitData = new FormData();
+    submitData.append("file", uploadFile);
+    submitData.append("universityId", universityId);
+    submitData.append("collegeId", formData.collegeId);
+    submitData.append("departmentId", formData.departmentId);
+    submitData.append("programId", formData.programId);
 
     try {
       const response = await axios.post(
         `${BASE_URL}/student/bulk-upload?universityName=${universityName}`,
-        formData,
+        submitData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -109,292 +171,358 @@ const BulkUpload = ({
 
       setUploadResult(response.data);
       setShowModal(true);
-      // onUploadSuccess();
       setFile(null);
       setConvertedFile(null);
-      setCollegeId("");
-      setDepartmentId("");
-      setProgramId("");
+      setFormData({
+        collegeId: "",
+        departmentId: "",
+        programId: "",
+      });
     } catch (error) {
       console.error("Bulk upload failed:", error);
 
-      // Check if API sent an error response
       if (error.response && error.response.data) {
-        setUploadResult(error.response.data); // Store error response
-        setReasons(error.response.data.reasons);
+        setUploadResult(error.response.data);
+        setReasons(error.response.data.reasons || []);
         setShowModal(true);
       } else {
         setUploadResult({ error: "Something went wrong. Please try again." });
         setShowModal(true);
       }
     } finally {
-      setLoading(false); // Hide loading message
+      setLoading(false);
     }
   };
+
   useEffect(() => {
     if (reasons.length > 0) {
       console.log("Updated reasons:", reasons);
     }
   }, [reasons]);
 
+  const filteredDepartments = departments.filter(dept => dept.college === formData.collegeId);
+  const filteredPrograms = programs.filter(prog => prog.department === formData.departmentId);
+
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="p-1 md:p-6 mx-auto">
-        <div>
-          <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">
-            Bulk Upload Students (.csv or .xlsx files)
-          </h2>
-          <p className="pb-5 font-sans text-gray-600">
-            Upload the students of a class or department. Ensure your file
-            matches the required template columns:
-          </p>
-          <ul className="flex space-x-6 text-gray-700 mb-4 list-decimal list-inside">
-            <li className="mr-4"> Name</li>
-            <li className="mr-4"> Registered Number</li>
-            <li className="mr-4"> Email</li>
-            <li className="mr-4"> Phone</li>
-            <li className="mr-4"> Enrollment Year</li>
-            <li className="mr-4"> Graduation Year</li>
-          </ul>
-
-          <p>
-            Click here to see the template:{" "}
-            <a
-              href="https://docs.google.com/spreadsheets/d/17ZFkjh11ZXTGNftQGNwnd2uuMJ3TVmxdyjkNEiRsUUo/edit?usp=sharing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 rounded shadow-lg transition-all duration-300"
-            >
-              Template
-            </a>
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* University ID */}
-          <div>
-            <label className="block mb-2 font-medium text-gray-600">
-              University ID
-            </label>
-            <input
-              type="text"
-              value={universityId}
-              readOnly
-              className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            />
-          </div>
-
-          {/* College Dropdown */}
-          <div>
-            <label className="block mb-2 font-medium text-gray-600">
-              Select College
-            </label>
-            <select
-              value={collegeId}
-              onChange={(e) => setCollegeId(e.target.value)}
-              className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            >
-              <option value="">Select a college</option>
-              {colleges.map((college) => (
-                <option key={college._id} value={college._id}>
-                  {college.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Department Dropdown */}
-          <div>
-            <label className="block mb-2 font-medium text-gray-600">
-              Select Department
-            </label>
-            <select
-              value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value)}
-              className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            >
-              <option value="">Select a department</option>
-              {departments
-                .filter((dept) => dept.college === collegeId)
-                .map((department) => (
-                  <option key={department._id} value={department._id}>
-                    {department.name}
-                  </option>
-                ))}
-            </select>
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg mr-3">
+              <Upload className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Bulk Upload Students</h2>
+              <p className="text-sm text-gray-600">
+                Upload multiple students at once using CSV or Excel files
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* program dropdown */}
-        <div className="mt-6">
-          <label className="block mb-2 font-medium text-gray-600">
-            Select Program
-          </label>
-          <select
-            value={programId}
-            onChange={(e) => setProgramId(e.target.value)}
-            className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          >
-            <option value="">Select a program</option>
-            {programs.map((program) => (
-              <option key={program._id} value={program._id}>
-                {program.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mt-6">
-          <label className="block mb-2 font-medium text-gray-600">
-            Upload File
-          </label>
-          <input
-            type="file"
-            accept=".csv, .xlsx"
-            onChange={handleFileChange}
-            className="w-full border rounded p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-          {fileError && <p className="text-red-500 mt-2">{fileError}</p>}
-        </div>
-
-        {loading && (
-          <p className="text-blue-500 mt-4">Uploading, please wait...</p>
-        )}
-
-        <div className="mt-6 text-center">
-          <button
-            type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded shadow-lg transition-all duration-300"
-            disabled={loading}
-          >
-            Upload File
-          </button>
-        </div>
-      </form>
-      
-      {showModal && uploadResult && (
-        <div className="mt-6 p-4 bg-white border border-gray-300 rounded shadow-md">
-          <h2 className="text-lg font-bold mb-2">Upload Result</h2>
-
-          {/* Show Error Message */}
-          {uploadResult.error && (
-            <p className="text-red-600 font-semibold">
-              🚨 {uploadResult.error}
-            </p>
-          )}
-
-          {/* Success & Failed Counts */}
-          {uploadResult.message && (
-            <p className="text-gray-700">{uploadResult.message}</p>
-          )}
-          {uploadResult.successCount !== undefined && (
-            <p className="text-green-600 font-semibold">
-              ✅ Success: {uploadResult.successCount}
-            </p>
-          )}
-          {uploadResult.failedCount !== undefined && (
-            <p className="text-red-600 font-semibold">
-              ❌ Failed: {uploadResult.failedCount}
-            </p>
-          )}
-
-          {/* Failed Records Section */}
-          {uploadResult.failedRecords &&
-            uploadResult.failedRecords.length > 0 && (
-              <div className="mt-4">
-                <p className="text-red-500 font-semibold">🚨 Failed Records:</p>
-                <div className="max-h-48 overflow-auto border border-gray-200 rounded p-2 bg-gray-50">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-gray-200">
-                        <th className="p-2 border">Name</th>
-                        <th className="p-2 border">Registered No</th>
-                        <th className="p-2 border">Email</th>
-                        <th className="p-2 border">Phone</th>
-                        <th className="p-2 border">Enrollment</th>
-                        <th className="p-2 border">Graduation</th>
-                        <th className="p-2 border">Error</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {uploadResult.failedRecords.map((record, index) => (
-                        <tr key={index} className="border-t">
-                          <td className="p-2 border">
-                            {record.row?.name || "N/A"}
-                          </td>
-                          <td className="p-2 border">
-                            {record.row?.registered_number || "N/A"}
-                          </td>
-                          <td className="p-2 border">
-                            {record.row?.email || "N/A"}
-                          </td>
-                          <td className="p-2 border">
-                            {record.row?.phone || "N/A"}
-                          </td>
-                          <td className="p-2 border">
-                            {record.row?.enrollment_year || "N/A"}
-                          </td>
-                          <td className="p-2 border">
-                            {record.row?.graduation_year || "N/A"}
-                          </td>
-                          <td className="p-2 border text-red-500">
-                            {record.error || "Unknown Error"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+        <div className="p-6">
+          {/* Template Download Section */}
+          <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Download Template</h3>
+                <p className="text-blue-700 mb-3">
+                  Use our template to ensure proper formatting. The template includes all required columns:
+                </p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {requiredColumns.map((column, index) => (
+                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      {column}
+                    </span>
+                  ))}
                 </div>
               </div>
-            )}
+              <button
+                onClick={downloadTemplate}
+                className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Template
+              </button>
+            </div>
+          </div>
 
-            {/* Display General Errors */}
-{reasons.length > 0 && (
-  <div className="mt-4">
-    <p className="text-red-500 font-semibold">🚨 Error Reasons:</p>
-    <div className="max-h-48 overflow-auto border border-gray-200 rounded p-2 bg-gray-50">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="p-2 border">Name</th>
-            <th className="p-2 border">Registered No</th>
-            <th className="p-2 border">Email</th>
-            <th className="p-2 border">Phone</th>
-            <th className="p-2 border">Enrollment</th>
-            <th className="p-2 border">Graduation</th>
-            <th className="p-2 border">Error</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reasons.map((reason, index) => (
-            <tr key={index} className="border-t">
-              <td className="p-2 border">{reason.row?.name || "N/A"}</td>
-              <td className="p-2 border">{reason.row?.registered_number || "N/A"}</td>
-              <td className="p-2 border">{reason.row?.email || "N/A"}</td>
-              <td className="p-2 border">{reason.row?.phone || "N/A"}</td>
-              <td className="p-2 border">{reason.row?.enrollment_year || "N/A"}</td>
-              <td className="p-2 border">{reason.row?.graduation_year || "N/A"}</td>
-              <td className="p-2 border text-red-500">{reason.error || "Unknown Error"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* University ID - Read Only */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                University ID
+              </label>
+              <input
+                type="text"
+                value={universityId}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+              />
+            </div>
 
-          {/* Close Button */}
-          <button
-            onClick={() => setShowModal(false)}
-            className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
-          >
-            Close
-          </button>
+            {/* Selection Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* College Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select College *
+                </label>
+                <select
+                  name="collegeId"
+                  value={formData.collegeId}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select a college</option>
+                  {colleges.map((college) => (
+                    <option key={college._id} value={college._id}>
+                      {college.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Department Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Department *
+                </label>
+                <select
+                  name="departmentId"
+                  value={formData.departmentId}
+                  onChange={handleInputChange}
+                  disabled={!formData.collegeId}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
+                  required
+                >
+                  <option value="">Select a department</option>
+                  {filteredDepartments.map((department) => (
+                    <option key={department._id} value={department._id}>
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Program Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Program *
+                </label>
+                <select
+                  name="programId"
+                  value={formData.programId}
+                  onChange={handleInputChange}
+                  disabled={!formData.departmentId}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
+                  required
+                >
+                  <option value="">Select a program</option>
+                  {filteredPrograms.map((program) => (
+                    <option key={program._id} value={program._id}>
+                      {program.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* File Upload Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload File *
+              </label>
+              <div
+                className={`
+                  relative border-2 border-dashed rounded-lg p-8 text-center transition-colors
+                  ${dragActive 
+                    ? 'border-blue-400 bg-blue-50' 
+                    : file 
+                      ? 'border-green-400 bg-green-50' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }
+                `}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                {file ? (
+                  <div className="flex flex-col items-center">
+                    <FileText className="w-12 h-12 text-green-600 mb-3" />
+                    <p className="font-medium text-green-900 mb-1">{file.name}</p>
+                    <p className="text-sm text-green-700">
+                      File size: {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFile(null);
+                        setConvertedFile(null);
+                        setFileError(null);
+                      }}
+                      className="mt-2 text-sm text-red-600 hover:text-red-800"
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <Upload className="w-12 h-12 text-gray-400 mb-3" />
+                    <p className="text-lg font-medium text-gray-900 mb-1">
+                      Drop your file here, or click to browse
+                    </p>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Supports CSV and Excel (.xlsx) files up to 10MB
+                    </p>
+                    <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                      <input 
+                        type="file" 
+                        accept=".csv,.xlsx" 
+                        onChange={handleFileChange} 
+                        className="hidden" 
+                      />
+                      Select File
+                    </label>
+                  </div>
+                )}
+              </div>
+              {fileError && (
+                <div className="mt-2 flex items-center text-red-600">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  <span className="text-sm">{fileError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={loading || !file}
+                className="flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Users className="w-4 h-4 mr-2" />
+                    Upload Students
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {/* Results Modal */}
+      {showModal && uploadResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">Upload Results</h2>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {/* Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {uploadResult.successCount !== undefined && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                      <span className="font-medium text-green-900">Successful</span>
+                    </div>
+                    <p className="text-2xl font-bold text-green-900 mt-1">
+                      {uploadResult.successCount}
+                    </p>
+                  </div>
+                )}
+                
+                {uploadResult.failedCount !== undefined && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+                      <span className="font-medium text-red-900">Failed</span>
+                    </div>
+                    <p className="text-2xl font-bold text-red-900 mt-1">
+                      {uploadResult.failedCount}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Error Message */}
+              {uploadResult.error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center">
+                    <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+                    <span className="font-medium text-red-900">Error</span>
+                  </div>
+                  <p className="text-red-800 mt-1">{uploadResult.error}</p>
+                </div>
+              )}
+
+              {/* Failed Records Table */}
+              {(uploadResult.failedRecords?.length > 0 || reasons.length > 0) && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="font-medium text-red-900 mb-3">Failed Records</h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-red-200">
+                      <thead className="bg-red-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-red-900 uppercase">Name</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-red-900 uppercase">Reg. No</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-red-900 uppercase">Email</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-red-900 uppercase">Error</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-red-200">
+                        {(uploadResult.failedRecords || reasons).map((record, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 text-sm text-red-800">
+                              {record.row?.name || "N/A"}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-red-800">
+                              {record.row?.registered_number || "N/A"}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-red-800">
+                              {record.row?.email || "N/A"}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-red-800">
+                              {record.error || "Unknown Error"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
