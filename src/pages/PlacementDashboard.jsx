@@ -14,7 +14,12 @@ import {
   Target,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Home,
+  TrendingUp,
+  Calendar,
+  Award,
+  Building
 } from "lucide-react";
 
 // Import components
@@ -61,7 +66,9 @@ function PlacementDashboard() {
     totalStudents: 0,
     totalJobs: 0,
     placedStudents: 0,
-    activeNotices: 0
+    activeNotices: 0,
+    placementRate: 0,
+    activeCompanies: 0
   });
 
   // Fetch data
@@ -143,10 +150,14 @@ function PlacementDashboard() {
       setGraduationYears(uniqueYears);
 
       // Update dashboard stats
+      const placedCount = studentData.filter(s => s.isPlaced).length;
+      const placementRate = studentData.length > 0 ? Math.round((placedCount / studentData.length) * 100) : 0;
+      
       setDashboardStats(prev => ({
         ...prev,
         totalStudents: studentData.length,
-        placedStudents: studentData.filter(s => s.isPlaced).length
+        placedStudents: placedCount,
+        placementRate: placementRate
       }));
     } catch (err) {
       console.error("Failed to fetch students:", err);
@@ -157,7 +168,7 @@ function PlacementDashboard() {
     { 
       id: "Dashboard", 
       label: "Dashboard", 
-      icon: BarChart3,
+      icon: Home,
       category: "overview"
     },
     { 
@@ -244,99 +255,188 @@ function PlacementDashboard() {
     settings: "Settings"
   };
 
-  // Dashboard component
+  // Enhanced Dashboard component
   const DashboardOverview = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back to {placementName}</p>
-        </div>
-        <div className="text-sm text-gray-500">
-          Last updated: {new Date().toLocaleDateString()}
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Welcome Back!</h1>
+            <p className="text-blue-100 text-lg">{placementName} Dashboard</p>
+            <p className="text-blue-200 text-sm mt-1">{universityName}</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold">{new Date().toLocaleDateString()}</div>
+            <div className="text-blue-200 text-sm">Last updated: {new Date().toLocaleTimeString()}</div>
+          </div>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Students</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Students</p>
               <p className="text-3xl font-bold text-gray-900">{dashboardStats.totalStudents}</p>
+              <p className="text-xs text-green-600 mt-1">↗ Active students</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="p-4 bg-blue-50 rounded-2xl">
+              <Users className="w-8 h-8 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Jobs</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Active Jobs</p>
               <p className="text-3xl font-bold text-gray-900">{dashboardStats.totalJobs}</p>
+              <p className="text-xs text-blue-600 mt-1">↗ Open positions</p>
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Briefcase className="w-6 h-6 text-green-600" />
+            <div className="p-4 bg-green-50 rounded-2xl">
+              <Briefcase className="w-8 h-8 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Placed Students</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Placed Students</p>
               <p className="text-3xl font-bold text-gray-900">{dashboardStats.placedStudents}</p>
+              <p className="text-xs text-purple-600 mt-1">↗ Successfully placed</p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Target className="w-6 h-6 text-purple-600" />
+            <div className="p-4 bg-purple-50 rounded-2xl">
+              <Award className="w-8 h-8 text-purple-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Placement Rate</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {dashboardStats.totalStudents > 0 
-                  ? Math.round((dashboardStats.placedStudents / dashboardStats.totalStudents) * 100)
-                  : 0}%
-              </p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Placement Rate</p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardStats.placementRate}%</p>
+              <p className="text-xs text-orange-600 mt-1">↗ Success rate</p>
             </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-orange-600" />
+            <div className="p-4 bg-orange-50 rounded-2xl">
+              <TrendingUp className="w-8 h-8 text-orange-600" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+          <Target className="w-6 h-6 mr-3 text-blue-600" />
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <button
             onClick={() => setActiveComponent("AddStudentForm")}
-            className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            className="group flex items-center p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 border border-blue-200"
           >
-            <UserPlus className="w-5 h-5 text-blue-600 mr-3" />
-            <span className="font-medium text-blue-900">Add New Student</span>
+            <div className="p-3 bg-blue-600 rounded-xl mr-4 group-hover:scale-110 transition-transform duration-300">
+              <UserPlus className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <span className="font-semibold text-blue-900 block">Add New Student</span>
+              <span className="text-blue-700 text-sm">Register individual students</span>
+            </div>
           </button>
+          
           <button
             onClick={() => setActiveComponent("JobForm")}
-            className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            className="group flex items-center p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 border border-green-200"
           >
-            <Briefcase className="w-5 h-5 text-green-600 mr-3" />
-            <span className="font-medium text-green-900">Post New Job</span>
+            <div className="p-3 bg-green-600 rounded-xl mr-4 group-hover:scale-110 transition-transform duration-300">
+              <Briefcase className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <span className="font-semibold text-green-900 block">Post New Job</span>
+              <span className="text-green-700 text-sm">Create job opportunities</span>
+            </div>
           </button>
+          
           <button
             onClick={() => setActiveComponent("Notice")}
-            className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+            className="group flex items-center p-6 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl hover:from-purple-100 hover:to-purple-200 transition-all duration-300 border border-purple-200"
           >
-            <Bell className="w-5 h-5 text-purple-600 mr-3" />
-            <span className="font-medium text-purple-900">Create Notice</span>
+            <div className="p-3 bg-purple-600 rounded-xl mr-4 group-hover:scale-110 transition-transform duration-300">
+              <Bell className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <span className="font-semibold text-purple-900 block">Create Notice</span>
+              <span className="text-purple-700 text-sm">Send announcements</span>
+            </div>
           </button>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <Calendar className="w-5 h-5 mr-3 text-blue-600" />
+            Recent Activities
+          </h3>
+          <div className="space-y-4">
+            <div className="flex items-center p-4 bg-gray-50 rounded-xl">
+              <div className="p-2 bg-blue-100 rounded-lg mr-4">
+                <Users className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">New students registered</p>
+                <p className="text-sm text-gray-600">5 students added today</p>
+              </div>
+            </div>
+            <div className="flex items-center p-4 bg-gray-50 rounded-xl">
+              <div className="p-2 bg-green-100 rounded-lg mr-4">
+                <Briefcase className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">New job posted</p>
+                <p className="text-sm text-gray-600">Software Engineer at TechCorp</p>
+              </div>
+            </div>
+            <div className="flex items-center p-4 bg-gray-50 rounded-xl">
+              <div className="p-2 bg-purple-100 rounded-lg mr-4">
+                <Award className="w-4 h-4 text-purple-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Placement success</p>
+                <p className="text-sm text-gray-600">3 students placed this week</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <Building className="w-5 h-5 mr-3 text-blue-600" />
+            System Overview
+          </h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+              <span className="font-medium text-gray-700">Total Colleges</span>
+              <span className="font-bold text-gray-900">{colleges.length}</span>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+              <span className="font-medium text-gray-700">Total Departments</span>
+              <span className="font-bold text-gray-900">{departments.length}</span>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+              <span className="font-medium text-gray-700">Total Programs</span>
+              <span className="font-bold text-gray-900">{programs.length}</span>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+              <span className="font-medium text-gray-700">Graduation Years</span>
+              <span className="font-bold text-gray-900">{graduationYears.length}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -438,10 +538,14 @@ function PlacementDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+            <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-blue-400 animate-ping mx-auto"></div>
+          </div>
+          <p className="mt-6 text-gray-700 font-medium">Loading dashboard...</p>
+          <p className="text-gray-500 text-sm">Please wait while we prepare your workspace</p>
         </div>
       </div>
     );
@@ -457,34 +561,36 @@ function PlacementDashboard() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Enhanced Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out
+        fixed lg:static inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out border-r border-gray-200
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">{placementName}</h2>
-              <p className="text-sm text-gray-600">{universityName}</p>
+          {/* Enhanced Header */}
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
+            <div className="flex items-center justify-between">
+              <div className="text-white">
+                <h2 className="text-xl font-bold">{placementName}</h2>
+                <p className="text-blue-100 text-sm">{universityName}</p>
+              </div>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-2 rounded-lg hover:bg-blue-500 text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
-          {/* Navigation */}
+          {/* Enhanced Navigation */}
           <nav className="flex-1 overflow-y-auto p-4 space-y-6">
             {Object.entries(categories).map(([categoryKey, categoryLabel]) => {
               const categoryItems = sidebarItems.filter(item => item.category === categoryKey);
               
               return (
                 <div key={categoryKey}>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
                     {categoryLabel}
                   </h3>
                   <div className="space-y-1">
@@ -500,16 +606,16 @@ function PlacementDashboard() {
                             setSidebarOpen(false);
                           }}
                           className={`
-                            w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
+                            w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200
                             ${isActive 
-                              ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' 
+                              ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm' 
                               : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                             }
                           `}
                         >
-                          <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
+                          <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
                           {item.label}
-                          {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
+                          {isActive && <ChevronRight className="w-4 h-4 ml-auto text-blue-600" />}
                         </button>
                       );
                     })}
@@ -518,18 +624,26 @@ function PlacementDashboard() {
               );
             })}
           </nav>
+
+          {/* Footer */}
+          <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <div className="text-center text-xs text-gray-500">
+              <p>© 2024 V-Buzz International</p>
+              <p>Placement Management System</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
+        {/* Enhanced Top bar */}
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 mr-4"
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 mr-4 transition-colors"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -544,15 +658,25 @@ function PlacementDashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                Welcome, {user?.name || 'Admin'}
+              <div className="text-right">
+                <div className="text-sm font-medium text-gray-900">
+                  Welcome, {user?.name || 'Admin'}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {user?.role || 'Placement Admin'}
+                </div>
+              </div>
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold">
+                  {(user?.name || 'A').charAt(0).toUpperCase()}
+                </span>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* Enhanced Page Content */}
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
           <div className="max-w-7xl mx-auto">
             {components[activeComponent]}
           </div>
