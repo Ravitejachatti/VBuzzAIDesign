@@ -540,7 +540,7 @@ const PlacementReports = ({ colleges, departments, programs, students }) => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredReports.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan="8\" className="px-4 py-12 text-center text-gray-500">
                       <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p className="text-lg font-medium">No placement data found</p>
                       <p className="text-sm">Try adjusting your filters or graduation year</p>
