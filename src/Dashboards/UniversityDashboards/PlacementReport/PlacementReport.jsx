@@ -485,7 +485,7 @@ const PlacementReports = ({ colleges, departments, programs, students }) => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredReports.length === 0 ? (
                     <tr>
-                      <td colSpan="14" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="14\" className="px-6 py-12 text-center text-gray-500">
                         <FaSearch className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No reports found</h3>
                         <p>Try adjusting your filters or search criteria.</p>
