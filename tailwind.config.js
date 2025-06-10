@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: false, // 👈 Add this line
   theme: {
     extend: {
       zIndex: {
@@ -20,5 +21,5 @@ export default {
       },
     },
   },
-  plugins: [], 
-}
+  plugins: [],
+};

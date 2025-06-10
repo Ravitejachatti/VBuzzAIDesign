@@ -18,7 +18,7 @@ const UniversityLogin = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        `${BASE_URL}/user/login?universityName=${universityName}`,
+        `https://vbuzzinternational-705795435794.us-central1.run.app/api/user/login?universityName=${universityName}`,
         {
           email,
           password,

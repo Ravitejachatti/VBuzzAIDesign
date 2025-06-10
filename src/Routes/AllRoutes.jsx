@@ -13,8 +13,8 @@ import UniversityOnboarding from "../pages/UniversityOnboarding.jsx";
 // import UniversityPage from "../pages/UniversityDashboard.jsx";
 // import CollegeDashboard from "../pages/CollegeDashboard.jsx";
 // import DepartmentDashboard from "../pages/DepartmentDashboard.jsx";
-import PlacementDashboard from "../pages/PlacementDashboard.jsx";
-// import StudentDashboard from "../pages/StudentDashboard.jsx";
+// import PlacementDashboard from "../pages/PlacementDashboard.jsx";
+import StudentDashboard from "../pages/StudentDashboard.jsx";
 // import PlacementDirectorPage from "../pages/PlacementDirectorPage.jsx";
 import StudentLoginPage from "../pages/StudentLogin.jsx";
 import UniversityLogin from "../pages/UniversityLogin.jsx";
@@ -114,7 +114,7 @@ const AllRoutes = () => {
           }
         /> */}
         
-        <Route
+        {/* <Route
           path="/dashboard/:universityName/placement/:placementName"
           element={
             <ProtectedRoute
@@ -124,8 +124,8 @@ const AllRoutes = () => {
               <PlacementDashboard />
             </ProtectedRoute>
           }
-        />
-        {/* Student Dashboard Route
+        /> */}
+        Student Dashboard Route
         <Route
           path="/dashboard/:universityName/student/:registeredNumber"
           element={
@@ -136,7 +136,7 @@ const AllRoutes = () => {
               <StudentDashboard />
             </ProtectedRoute>
           }
-        /> */}
+        />
 
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
