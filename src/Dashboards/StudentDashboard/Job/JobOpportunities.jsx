@@ -2,21 +2,41 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Dialog } from "@headlessui/react";
+import { 
+  Search, 
+  Filter, 
+  MapPin, 
+  Calendar, 
+  DollarSign, 
+  Building2, 
+  Eye, 
+  ExternalLink,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Briefcase,
+  Users,
+  TrendingUp
+} from 'lucide-react';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const JobOpportunities = ({ studentData }) => {
   const { universityName } = useParams();
   const token = localStorage.getItem("Student token");
-
   const departmentId = studentData?.student?.department || localStorage.getItem("department");
 
   const [jobs, setJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [loadingJob, setLoadingJob] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedJobDescription, setSelectedJobDescription] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [companyFilter, setCompanyFilter] = useState("");
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -29,9 +49,9 @@ const JobOpportunities = ({ studentData }) => {
             },
           }
         );
-        // Sort jobs in descending order based on closing date
         const sortedJobs = response.data.sort((a, b) => new Date(b.closingDate) - new Date(a.closingDate));
         setJobs(sortedJobs);
+        setFilteredJobs(sortedJobs);
       } catch (err) {
         setError("Failed to fetch job opportunities. Please try again later.");
       } finally {
@@ -40,6 +60,31 @@ const JobOpportunities = ({ studentData }) => {
     };
     fetchJobs();
   }, [universityName]);
+
+  // Filter jobs based on search and filters
+  useEffect(() => {
+    let filtered = jobs;
+
+    if (searchTerm) {
+      filtered = filtered.filter(job =>
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(job => job.status.toLowerCase() === statusFilter.toLowerCase());
+    }
+
+    if (companyFilter) {
+      filtered = filtered.filter(job =>
+        job.company.toLowerCase().includes(companyFilter.toLowerCase())
+      );
+    }
+
+    setFilteredJobs(filtered);
+  }, [searchTerm, statusFilter, companyFilter, jobs]);
 
   const openLinkInNewTab = (url) => {
     window.open(url, "_blank");
@@ -50,167 +95,379 @@ const JobOpportunities = ({ studentData }) => {
     setViewModalOpen(true);
   };
 
-  return (
-    <div className="p-2">
-      <h2 className="text-xl font-semibold text-gray-800 mx-2 mb-2">
-        Job Opportunities({jobs?.length})
-      </h2>
-      <div>
-        {loading ? (
+  const getStatusIcon = (status) => {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'closed':
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      default:
+        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'closed':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    }
+  };
+
+  const isJobExpiringSoon = (closingDate) => {
+    const today = new Date();
+    const closing = new Date(closingDate);
+    const diffTime = closing - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 3 && diffDays > 0;
+  };
+
+  const uniqueCompanies = [...new Set(jobs.map(job => job.company))];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           <p className="text-gray-600">Loading job opportunities...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : jobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 ">
-            {jobs.map((job, index) => (
-              <div key={job._id} className="bg-white shadow rounded-md p-2 border border-gray-300 p-5">
-                <h3 className="text-md font-bold text-gray-800 mb-2">{index+1}.{job.title}</h3>
-                <p className="text-gray-600 mb-2"><strong>Company:</strong> {job.company}</p>
-                <p className="text-gray-600 mb-2">
-                  Description: {job.description.length > 100 ? `${job.description.substring(0, 100)}...` : job.description}
-                  {job.description.length > 100 && (
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <p className="text-red-500 text-lg font-medium">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 flex items-center">
+              <Briefcase className="w-8 h-8 text-blue-600 mr-3" />
+              Job Opportunities
+            </h2>
+            <p className="text-gray-600 mt-2">Discover exciting career opportunities tailored for you</p>
+          </div>
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg">
+            <div className="text-center">
+              <div className="text-2xl font-bold">{filteredJobs.length}</div>
+              <div className="text-sm opacity-90">Available Jobs</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search and Filter Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search jobs, companies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              >
+                <option value="all">All Status</option>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+
+            {/* Company Filter */}
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <select
+                value={companyFilter}
+                onChange={(e) => setCompanyFilter(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              >
+                <option value="">All Companies</option>
+                {uniqueCompanies.map((company, index) => (
+                  <option key={index} value={company}>{company}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Jobs Grid */}
+      {filteredJobs.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredJobs.map((job, index) => (
+            <div
+              key={job._id}
+              className="bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
+            >
+              {/* Job Header */}
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                      {index + 1}. {job.title}
+                    </h3>
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <Building2 className="w-4 h-4 mr-2" />
+                      <span className="font-medium">{job.company}</span>
+                    </div>
+                  </div>
+                  <div className={`flex items-center px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(job.status)}`}>
+                    {getStatusIcon(job.status)}
+                    <span className="ml-1">{job.status}</span>
+                  </div>
+                </div>
+
+                {/* Job Details */}
+                <div className="space-y-2">
+                  <div className="flex items-center text-gray-600">
+                    <Users className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Min. {job.minPercentage}% required</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    <span className="text-sm">
+                      Closes: {new Date(job.closingDate).toLocaleDateString()}
+                      {isJobExpiringSoon(job.closingDate) && (
+                        <span className="ml-2 text-red-500 font-medium">(Expiring Soon!)</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Job Description */}
+              <div className="p-6">
+                <p className="text-gray-700 text-sm leading-relaxed mb-4">
+                  {job.description.length > 120 
+                    ? `${job.description.substring(0, 120)}...` 
+                    : job.description
+                  }
+                  {job.description.length > 120 && (
                     <button
                       onClick={() => handleViewDescription(job.description)}
-                      className="text-blue-500 hover:underline ml-1"
+                      className="text-blue-600 hover:text-blue-800 ml-2 font-medium inline-flex items-center"
                     >
-                      View
+                      <Eye className="w-4 h-4 mr-1" />
+                      View Full
                     </button>
                   )}
                 </p>
-                <p className="text-gray-600 mb-2">Min_Percentage: {job.minPercentage}%</p>
-                <p className="text-gray-600 mb-2">Status: {job.status}</p>
-                <p className="text-gray-600 mb-4">Closing Date: {new Date(job.closingDate).toLocaleDateString()}</p>
 
-                <div className="space-y-2 mx-auto flex justify-between items-center ">
+                {/* Action Buttons */}
+                <div className="flex space-x-3">
                   {job.linkToPdf && (
                     <button
                       onClick={() => openLinkInNewTab(job.linkToPdf)}
-                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center"
                     >
-                      View Job
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      View Details
                     </button>
                   )}
 
-{job.linkToApply ? (
-  <button
-    onClick={async () => {
-      if (job.status !== "Closed" && loadingJob !== job._id) {
-        setLoadingJob(job._id);
-        try {
-          const response = await axios.post(
-            `${BASE_URL}/student/jobs/${job._id}/apply?universityName=${encodeURIComponent(universityName)}`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("Student token")}`,
-              },
-            }
-          );
-          if (response.status === 200) {
-            alert(response.data.message || "Application recorded successfully!");
-            if (job.linkToApply) {
-              openLinkInNewTab(job.linkToApply);
-            }
-          }
-        } catch (error) {
-          if (
-            error.response?.data?.error === 
-            "Error adding applicant to job: Student has already applied to this job"
-          ) {
-            alert("You have already applied. Opening the job link.");
-            if (job.linkToApply) {
-              openLinkInNewTab(job.linkToApply);
-            }
-          } else {
-            alert(
-              error.response?.data?.error + 
-              ". Contact Placement office if you want to apply for new Job." ||
-              "Failed to apply to job. Please try again later."
-            );
-          }
-        } finally {
-          setLoadingJob(null);
-        }
-      }
-    }}
-    className={`px-4 py-2 rounded ${loadingJob === job._id
-        ? "bg-gray-500 text-white cursor-not-allowed"
-        : job.status === "Closed"
-          ? "bg-gray-500 text-white cursor-not-allowed"
-          : "bg-blue-500 text-white hover:bg-blue-600"
-      }`}
-    disabled={loadingJob === job._id || job.status === "Closed"}
-  >
-    {loadingJob === job._id ? "Loading..." : job.status === "Closed" ? "Closed" : "Apply Now"}
-  </button>
-) : (
-  <button
-    onClick={async () => {
-      if (job.status !== "Closed" && loadingJob !== job._id) {
-        setLoadingJob(job._id);
-        try {
-          const response = await axios.post(
-            `${BASE_URL}/student/jobs/${job._id}/apply?universityName=${encodeURIComponent(universityName)}`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("Student token")}`,
-              },
-            }
-          );
-          if (response.status === 200) {
-            alert(response.data.message || "Application recorded successfully!");
-          }
-        } catch (error) {
-          alert(
-            error.response?.data?.error + 
-            ". Contact Placement office if you want to apply for new Job." ||
-            "Failed to apply to job. Please try again later."
-          );
-        } finally {
-          setLoadingJob(null);
-        }
-      }
-    }}
-    className={`px-4 py-2 rounded ${loadingJob === job._id
-        ? "bg-gray-500 text-white cursor-not-allowed"
-        : job.status === "Closed"
-          ? "bg-gray-500 text-white cursor-not-allowed"
-          : "bg-blue-500 text-white hover:bg-blue-600"
-      }`}
-    disabled={loadingJob === job._id || job.status === "Closed"}
-  >
-    {loadingJob === job._id ? "Loading..." : job.status === "Closed" ? "Closed" : "Apply Now"}
-  </button>
-)}
-
+                  {job.linkToApply ? (
+                    <button
+                      onClick={async () => {
+                        if (job.status !== "Closed" && loadingJob !== job._id) {
+                          setLoadingJob(job._id);
+                          try {
+                            const response = await axios.post(
+                              `${BASE_URL}/student/jobs/${job._id}/apply?universityName=${encodeURIComponent(universityName)}`,
+                              {},
+                              {
+                                headers: {
+                                  Authorization: `Bearer ${localStorage.getItem("Student token")}`,
+                                },
+                              }
+                            );
+                            if (response.status === 200) {
+                              alert(response.data.message || "Application recorded successfully!");
+                              if (job.linkToApply) {
+                                openLinkInNewTab(job.linkToApply);
+                              }
+                            }
+                          } catch (error) {
+                            if (
+                              error.response?.data?.error === 
+                              "Error adding applicant to job: Student has already applied to this job"
+                            ) {
+                              alert("You have already applied. Opening the job link.");
+                              if (job.linkToApply) {
+                                openLinkInNewTab(job.linkToApply);
+                              }
+                            } else {
+                              alert(
+                                error.response?.data?.error + 
+                                ". Contact Placement office if you want to apply for new Job." ||
+                                "Failed to apply to job. Please try again later."
+                              );
+                            }
+                          } finally {
+                            setLoadingJob(null);
+                          }
+                        }
+                      }}
+                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center ${
+                        loadingJob === job._id
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : job.status === "Closed"
+                            ? "bg-gray-400 text-white cursor-not-allowed"
+                            : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      }`}
+                      disabled={loadingJob === job._id || job.status === "Closed"}
+                    >
+                      {loadingJob === job._id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Applying...
+                        </>
+                      ) : job.status === "Closed" ? (
+                        <>
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Closed
+                        </>
+                      ) : (
+                        <>
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Apply Now
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        if (job.status !== "Closed" && loadingJob !== job._id) {
+                          setLoadingJob(job._id);
+                          try {
+                            const response = await axios.post(
+                              `${BASE_URL}/student/jobs/${job._id}/apply?universityName=${encodeURIComponent(universityName)}`,
+                              {},
+                              {
+                                headers: {
+                                  Authorization: `Bearer ${localStorage.getItem("Student token")}`,
+                                },
+                              }
+                            );
+                            if (response.status === 200) {
+                              alert(response.data.message || "Application recorded successfully!");
+                            }
+                          } catch (error) {
+                            alert(
+                              error.response?.data?.error + 
+                              ". Contact Placement office if you want to apply for new Job." ||
+                              "Failed to apply to job. Please try again later."
+                            );
+                          } finally {
+                            setLoadingJob(null);
+                          }
+                        }
+                      }}
+                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center ${
+                        loadingJob === job._id
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : job.status === "Closed"
+                            ? "bg-gray-400 text-white cursor-not-allowed"
+                            : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      }`}
+                      disabled={loadingJob === job._id || job.status === "Closed"}
+                    >
+                      {loadingJob === job._id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Applying...
+                        </>
+                      ) : job.status === "Closed" ? (
+                        <>
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Closed
+                        </>
+                      ) : (
+                        <>
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Apply Now
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
-
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-600">No job opportunities available for your department at the moment.</p>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <Briefcase className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">No Jobs Found</h3>
+          <p className="text-gray-600 mb-6">
+            {searchTerm || statusFilter !== "all" || companyFilter
+              ? "Try adjusting your search criteria to find more opportunities."
+              : "No job opportunities are available for your department at the moment."}
+          </p>
+          {(searchTerm || statusFilter !== "all" || companyFilter) && (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+                setCompanyFilter("");
+              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Modal for Viewing Full Description */}
-      <Dialog open={viewModalOpen} onClose={() => setViewModalOpen(false)} className="fixed inset-0 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
-        <Dialog.Panel className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-[80vh] flex flex-col">
-          <h2 className="text-xl font-bold mb-4">Job Description</h2>
-          {/* Scrollable container for the description */}
-          <div className="overflow-y-auto flex-1">
-            <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded-lg">
-              {selectedJobDescription}
-            </pre>
+      <Dialog open={viewModalOpen} onClose={() => setViewModalOpen(false)} className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-xl">
+              <Dialog.Title className="text-2xl font-bold">Job Description</Dialog.Title>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="prose max-w-none">
+                <pre className="whitespace-pre-wrap bg-gray-50 p-6 rounded-lg border text-gray-800 leading-relaxed">
+                  {selectedJobDescription}
+                </pre>
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200">
+              <button
+                onClick={() => setViewModalOpen(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setViewModalOpen(false)}
-            className="bg-gray-500 text-white px-3 py-1 rounded mt-4 self-end"
-          >
-            Close
-          </button>
-        </Dialog.Panel>
+        </div>
       </Dialog>
     </div>
   );
