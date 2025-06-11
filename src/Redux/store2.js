@@ -17,6 +17,7 @@ import { skillsReducer } from "./StudentDashboard/Profile/skillsSlice";
 import { workExperienceReducer } from "./StudentDashboard/Profile/workExperienceSlice";
 import { contactInfoReducer } from "./StudentDashboard/Profile/contactInfoSlice";
 import { parentDetailsReducer } from "./StudentDashboard/Profile/parentDetailsSlice";
+import { documentsReducer } from "./StudentDashboard/Profile/documentSlice.js";
 
 
 
@@ -30,7 +31,6 @@ const store=configureStore({
 
             jobs:jobs,
             notice: noticeReducer,
-            student:studentReducer,
             job:jobReducer,
             round:roundReducer,
 
@@ -41,9 +41,11 @@ const store=configureStore({
             workExperience: workExperienceReducer,
             contactInfo: contactInfoReducer,
             parentDetails: parentDetailsReducer,
+            documents: documentsReducer,
 
 
 
+           student:studentReducer,
 
 
 

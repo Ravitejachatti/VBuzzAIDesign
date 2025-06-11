@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx"; // Import the xlsx library
-import ToggleEligibility from "../Student/ToggleEligibility";
+// import ToggleEligibility from "../PlacementDashboard/Student/ToggleEligibility";
 import { useMemo } from "react";
 
-const PlacementReports = ({ colleges, departments, programs, students }) => {
+function Reports({ colleges, departments, programs, CollegeName})  {
   const { universityName } = useParams();
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const currentYear = new Date().getFullYear();
@@ -47,7 +47,7 @@ const getCompaniesAndCTCs = (report) => {
 
   const allPlacements = [...offCampus, ...onCampus];
 
-  return allPlacements?.map((placement) => {
+  return allPlacements.map((placement) => {
     const company = placement.companyName || placement.company || "N/A";
     const ctc = placement.ctc ? `${placement.ctc}` : "N/A";
     return `${company} (${ctc})`;
@@ -59,26 +59,27 @@ const getCompaniesAndCTCs = (report) => {
 
   const token = localStorage.getItem("University authToken");
 
-  console.log("students data in placemntReports are:", students);
+  
 
   // Create mapping objects for quick ID-to-name lookup
-  const collegeMap = useMemo(() => colleges?.reduce((acc, college) => {
+  // Create mapping objects for quick ID-to-name lookup
+  const collegeMap = useMemo(() => colleges.reduce((acc, college) => {
     acc[college._id] = college.name;
     return acc;
   }, {}), [colleges]);
 
-  const departmentMap = useMemo(() => departments?.reduce((acc, department) => {
+  const departmentMap = useMemo(() => departments.reduce((acc, department) => {
     acc[department._id] = department.name;
     return acc;
   }, {}), [departments]);
 
-  const programMap = useMemo(() => programs?.reduce((acc, program) => {
+  const programMap = useMemo(() => programs.reduce((acc, program) => {
     acc[program._id] = program.name;
     return acc;
   }, {}), [programs]);
 
-   // Auto-fetch reports when graduationYear changes
-   useEffect(() => {
+  // Auto-fetch reports when graduationYear changes
+  useEffect(() => {
     const fetchReports = async () => {
       if (!graduationYear) {
         setError("Please enter graduation year.");
@@ -106,18 +107,17 @@ const getCompaniesAndCTCs = (report) => {
             ...(report.onCampusPlacements || []),
           ]);
 
-         const uniqueCompanies = [
-        ...new Set(
-          allPlacements
-            ?.map((placement) => (placement.companyName || placement.company || "").toLowerCase())
-            .filter((name) => name)
-        )
-      ].sort((a, b) => a.localeCompare(b));
+          const uniqueCompanies = [
+            ...new Set(
+              allPlacements
+                .map((placement) => (placement.companyName || placement.company || "").toLowerCase()))
+                .filter((name) => name)
+          ].sort((a, b) => a.localeCompare(b));
 
           const uniqueCTCs = [
             ...new Set(
               allPlacements
-                ?.map((placement) => placement.ctc)
+                .map((placement) => placement.ctc)
                 .filter((ctc) => ctc != null)
             )
           ].sort((a, b) => b - a);
@@ -236,7 +236,7 @@ const { totalStudents, totalPlacedStudents, totalPlacements } = useMemo(() => {
   // Function to download the table data as an Excel file
   const downloadExcel = () => {
     // Prepare the data for the Excel file
-    const data = filteredReports?.map((report) => {
+    const data = filteredReports.map((report) => {
       const allPlacements = [
         ...(report.offCampusPlacements || []),
         ...(report.onCampusPlacements || []),
@@ -244,7 +244,7 @@ const { totalStudents, totalPlacedStudents, totalPlacements } = useMemo(() => {
 
       const placementDetails = allPlacements.length > 0
         ? allPlacements
-          ?.map((placement) => {
+          .map((placement) => {
             const company = placement.companyName || placement.company || "N/A";
             const status = placement.status || "N/A";
             return `${company} (${status})`;
@@ -283,7 +283,7 @@ const { totalStudents, totalPlacedStudents, totalPlacements } = useMemo(() => {
   // This function will be passed to the ToggleEligibility componen
   const handleStatusUpdate = (updatedStudents) => {
     setReports((prevReports) =>
-      prevReports?.map((report) => {
+      prevReports.map((report) => {
         const updated = updatedStudents.find((s) => s._id === report._id);
         return updated ? { ...report, canApply: updated.canApply } : report;
       })
@@ -314,12 +314,22 @@ const getTotalPlacements = (student) => {
 
   return (
     <div className="p-4 border rounded w-full">
-      <h1 className="text-xl font-bold ">Placement Reports:</h1>
+      <h1 className="text-xl font-bold ">Placement Reportsss:</h1>
 
       {/* Filters Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 mb-3">
-      <div>
+
+        {/* graduation year before commented */}
+        {/* <div>
           <label className="block font-medium">Graduation Year</label>
+          <input type="number" value={graduationYear} onChange={(e) => setGraduationYear(e.target.value)} className="w-full border p-2 rounded" />
+          <button onClick={fetchReports} className="mt-2 bg-blue-600 text-white px-4 py-1 rounded">Fetch</button>
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        </div> */}
+
+      {/* graduation year new  */}
+      <div>
+          <label className="block font-medium">Graduation Years</label>
           <input 
             type="number" 
             value={graduationYear} 
@@ -328,44 +338,41 @@ const getTotalPlacements = (student) => {
             min="2000"
             max={currentYear + 5}
           />
-          {loading && (
-            <div className="mt-2 text-blue-500">Loading data...</div>
-          )}
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        </div>
+          </div>
+
         <div>
           <label className="block font-medium">College</label>
           <select value={selectedCollege} onChange={(e) => setSelectedCollege(e.target.value)} className="w-full border p-2 rounded">
             <option value="">All Colleges</option>
-            {colleges?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
+            {colleges.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
           </select>
         </div>
         <div>
           <label className="block font-medium">Department</label>
           <select value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)} className="w-full border p-2 rounded">
             <option value="">All Departments</option>
-            {departments?.map((d) => <option key={d._id} value={d._id}>{d.name}</option>)}
+            {departments.map((d) => <option key={d._id} value={d._id}>{d.name}</option>)}
           </select>
         </div>
         <div>
           <label className="block font-medium">Program</label>
           <select value={selectedProgram} onChange={(e) => setSelectedProgram(e.target.value)} className="w-full border p-2 rounded">
             <option value="">All Programs</option>
-            {programs?.map((p) => <option key={p._id} value={p._id}>{p.name}</option>)}
+            {programs.map((p) => <option key={p._id} value={p._id}>{p.name}</option>)}
           </select>
         </div>
         <div>
           <label className="block font-medium">Company Name</label>
           <select value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)} className="w-full border p-2 rounded">
             <option value="">All Companies</option>
-            {availableCompanies?.map((company, idx) => <option key={idx} value={company}>{company}</option>)}
+            {availableCompanies.map((company, idx) => <option key={idx} value={company}>{company}</option>)}
           </select>
         </div>
         <div>
           <label className="block font-medium">CTC (in LPA)</label>
           <select value={selectedCTC} onChange={(e) => setSelectedCTC(e.target.value)} className="w-full border p-2 rounded">
             <option value="">All CTCs</option>
-            {availableCTCs?.map((ctc, idx) => <option key={idx} value={ctc}>{ctc}</option>)}
+            {availableCTCs.map((ctc, idx) => <option key={idx} value={ctc}>{ctc}</option>)}
           </select>
         </div>
         <div>
@@ -441,7 +448,7 @@ const getTotalPlacements = (student) => {
     }
     onChange={(e) => {
       if (e.target.checked) {
-        setSelectedStudentIds(filteredReports?.map((r) => r._id));
+        setSelectedStudentIds(filteredReports.map((r) => r._id));
       } else {
         setSelectedStudentIds([]);
       }
@@ -460,7 +467,7 @@ const getTotalPlacements = (student) => {
                   </td>
                 </tr>
               ) : (
-                filteredReports?.map((report, index) => (
+                filteredReports.map((report, index) => (
                   <React.Fragment key={report._id}>
                     <tr className="border-t">
                       <td className="border px-1 py-1 text-2xs">{index + 1}</td>
@@ -605,7 +612,7 @@ const getTotalPlacements = (student) => {
                 </tr>
               </thead>
               <tbody>
-                {viewStudent.offCampusPlacements?.map((placement, idx) => (
+                {viewStudent.offCampusPlacements.map((placement, idx) => (
                   <tr key={idx}>
                     <td className="border px-1 py-1">{placement?.companyName || "N/A"}</td>
                     <td className="border px-1 py-1">{placement?.role || "N/A"}</td>
@@ -647,7 +654,7 @@ const getTotalPlacements = (student) => {
                 </tr>
               </thead>
               <tbody>
-                {viewStudent.onCampusPlacements?.map((placement, idx) => (
+                {viewStudent.onCampusPlacements.map((placement, idx) => (
                   <tr key={idx}>
                     <td className="border px-1 py-1">{placement?.company || "N/A"}</td>
                     <td className="border px-1 py-1">{placement?.title || "N/A"}</td>
@@ -685,7 +692,7 @@ const getTotalPlacements = (student) => {
             <ol className="list-decimal pl-5">
               {getCompaniesAndCTCs(
                 filteredReports.find((r) => r._id === expandedStudentId)
-              )?.map((entry, idx) => (
+              ).map((entry, idx) => (
                 <li key={idx}>{entry}</li>
               ))}
             </ol>
@@ -701,4 +708,4 @@ const getTotalPlacements = (student) => {
   );
 };
 
-export default PlacementReports;
+export default Reports;
