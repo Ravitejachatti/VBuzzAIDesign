@@ -1,47 +1,52 @@
+
+
 import React, { useState, useEffect } from "react";
-import { fetchPlacementReports } from "../../Redux/Placement/placementReportsSlice";
+import { fetchPlacementReports } from "../../../Redux/Placement/placementReportsSlice";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx"; // Import the xlsx library
-import ToggleEligibility from "../CollegeDashboard/PlacementDashboard/PlacementReport/ToggleEligibility"
+import ToggleEligibility from "./ToggleEligibility";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Select from 'react-select';
+import PlacementCharts from "./PlacementCharts"; // adjust path if needed
+import CTCRangeFilter, { matchCTCRange } from './CTCRangeFilter';
 
-const Reports = () => {
-  const dispatch = useDispatch();
-  const { universityName } = useParams();
-  const currentYear = new Date().getFullYear();
-  const [graduationYear, setGraduationYear] = useState(currentYear.toString());
+
+
+const PlacementReports = () => {
+const dispatch = useDispatch();
+const { universityName } = useParams();
+const currentYear = new Date().getFullYear();
+const [graduationYear, setGraduationYear] = useState(new Date().getFullYear().toString());
+const [selectedCollege, setSelectedCollege] = useState("");
+const [selectedDepartment, setSelectedDepartment] = useState("");
+const [selectedProgram, setSelectedProgram] = useState("");
+const [placementStatusFilter, setPlacementStatusFilter] = useState("all");
+const [selectedCompany, setSelectedCompany] = useState([]);
+const [selectedCTC, setSelectedCTC] = useState("");
+const [filteredDepartments, setFilteredDepartments] = useState([]);
+const [filteredPrograms, setFilteredPrograms] = useState([]);
+const [availableCompanies, setAvailableCompanies] = useState([]);
+const [availableCTCs, setAvailableCTCs] = useState([]);
+const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+const [viewStudent, setViewStudent] = useState(null);
+const [modalOpen, setModalOpen] = useState(false);
+const [expandedStudentId, setExpandedStudentId] = useState(null);
+const token = localStorage.getItem("University authToken");
+
 
   const colleges = useSelector((state) => state.colleges.colleges) || [];
   const departments = useSelector((state) => state.department.departments) || [];
   const programs = useSelector((state) => state.programs.programs) || [];
   const students = useSelector((state) => state.students.students) || [];
 
-  console.log("students data in placementReports are:", students);
-  const { list: reports, loading, error } = useSelector(s => s.placementReports);
+  useEffect(() => {
+  dispatch(fetchPlacementReports({ token, universityName, graduationYear }));
+}, [dispatch, token, universityName, graduationYear]);
 
-  // added for imporved ui
-  const [viewStudent, setViewStudent] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
+const { list: reports, loading, error } = useSelector(s => s.placementReports);
 
-  // State for filters
-  const [selectedCollege, setSelectedCollege] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedProgram, setSelectedProgram] = useState("");
-  const [placementStatusFilter, setPlacementStatusFilter] = useState("all"); // "all", "placed", "unplaced"
 
-  const [selectedCompany, setSelectedCompany] = useState([]);
-  const [selectedCTC, setSelectedCTC] = useState("");
-
-  const [availableCompanies, setAvailableCompanies] = useState([]);
-  const [availableCTCs, setAvailableCTCs] = useState([]);
-
-  // for the checkbox and eligibilty
-  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
-
-  // for the comapanies and CTCs
-  const [expandedStudentId, setExpandedStudentId] = useState(null);
   // Function to get companies and CTCs
   // Function to get companies and CTCs with valid placements only
   const getCompaniesAndCTCs = (report) => {
@@ -60,27 +65,6 @@ const Reports = () => {
       return `${company} (${ctc})`;
     });
   };
-
-
-  const filteredDepartments = useMemo(() => {
-    return selectedCollege
-      ? departments.filter((dept) => dept.college === selectedCollege)
-      : departments;
-  }, [selectedCollege, departments]);
-
-  const filteredPrograms = useMemo(() => {
-    return selectedDepartment
-      ? programs.filter((prog) => prog.department?._id === selectedDepartment)
-      : programs;
-  }, [selectedDepartment, programs]);
-
-
-
-
-  const token = localStorage.getItem("University authToken");
-
-  console.log("students data in placemntReports are:", students);
-
   // Create mapping objects for quick ID-to-name lookup
   const collegeMap = useMemo(() => colleges?.reduce((acc, college) => {
     acc[college._id] = college.name;
@@ -97,130 +81,94 @@ const Reports = () => {
     return acc;
   }, {}), [programs]);
 
-  + // Dispatch thunk on graduationYear change and keep error handling as well
-
-    useEffect(() => {
-      dispatch(fetchPlacementReports({ token, universityName, graduationYear }));
-      // extract available companies and CTCs from reports
-
-    }, [dispatch, token, universityName, graduationYear]);
-
-
-  // 2️⃣ derive availableCompanies & availableCTCs from the freshly‐fetched `reports`
   useEffect(() => {
-    const companiesSet = new Set();
-    const ctcsSet = new Set();
+  const companiesSet = new Set();
+  const ctcsSet = new Set();
 
-    reports.forEach((r) => {
-      // combine all valid placements
-      const all = [
-        ...(r.offCampusPlacements || []),
-        ...(r.onCampusPlacements || []).filter(p => p.status === "Selected"),
-      ];
-      all.forEach((p) => {
-        const name = p.companyName || p.company;
-        if (name) companiesSet.add(name);
-        if (p.ctc != null) ctcsSet.add(p.ctc);
-      });
+  reports.forEach((r) => {
+    const allPlacements = [
+      ...(r.offCampusPlacements || []),
+      ...(r.onCampusPlacements || []).filter(p => p.status === "Selected"),
+    ];
+    allPlacements.forEach((p) => {
+      if (p.companyName || p.company) companiesSet.add(p.companyName || p.company);
+      if (p.ctc != null) ctcsSet.add(p.ctc);
     });
+  });
 
-    setAvailableCompanies(Array.from(companiesSet).sort((a, b) => a.localeCompare(b)));
-    setAvailableCTCs(Array.from(ctcsSet).sort((a, b) => b - a));
-  }, [reports]);
+  setAvailableCompanies([...companiesSet].sort());
+  setAvailableCTCs([...ctcsSet].sort((a, b) => b - a));
+}, [reports]);
 
 
-  // Filter reports based on selected college, department, program, and placement status
-  const filteredReports = useMemo(() => {
-    return reports.filter((report) => {
-      const matchesGraduationYear = !graduationYear || report.graduationYear === parseInt(graduationYear);
-      const matchesCollege = !selectedCollege || report.collegeId === selectedCollege;
-      const matchesDepartment = !selectedDepartment || report.departmentId === selectedDepartment;
-      const matchesProgram = !selectedProgram || report.programId === selectedProgram;
+// Step 1: Filter based only on year, college, dept, program
+const baseFilteredReports = useMemo(() => {
+  return reports.filter((report) => {
+    const matchesGraduationYear = !graduationYear || report.graduationYear === parseInt(graduationYear);
+    const matchesCollege = !selectedCollege || report.collegeId === selectedCollege;
+    const matchesDepartment = !selectedDepartment || report.departmentId === selectedDepartment;
+    const matchesProgram = !selectedProgram || report.programId === selectedProgram;
 
-      const offCampus = (report.offCampusPlacements || [])
-      const onCampus = (report.onCampusPlacements || []).filter(p => p.status === "Selected");
+    return matchesGraduationYear && matchesCollege && matchesDepartment && matchesProgram;
+  });
+}, [reports, graduationYear, selectedCollege, selectedDepartment, selectedProgram]);
 
-      const allPlacements = [...offCampus, ...onCampus];
+// Step 2: Apply additional filters like company, CTC, placement status
+const filteredReports = useMemo(() => {
+  return baseFilteredReports.filter((report) => {
+    const offCampus = report.offCampusPlacements || [];
+    const onCampus = (report.onCampusPlacements || []).filter(p => p.status === "Selected");
+    const allPlacements = [...offCampus, ...onCampus];
 
-      // count *any* placement record, regardless of status
-      const hasPlacements = (report?.placements?.length ?? 0) > 0;
-      console.log("report.placements:", report);
-      const matchesPlacementStatus =
-        placementStatusFilter === "all" ||
-        (placementStatusFilter === "placed" && hasPlacements) ||
-        (placementStatusFilter === "unplaced" && !hasPlacements);
+    const hasPlacements = (report?.placements?.length ?? 0) > 0;
 
-      const matchesCompany =
-        selectedCompany.length === 0 ||
-        allPlacements.some(p =>
-          selectedCompany
-            .map(c => c.toLowerCase())
-            .includes((p.companyName || p.company || "").toLowerCase())
-        );
-      const matchesCTC =
-        !selectedCTC ||
-        allPlacements.some((p) =>
-          p.ctc != null && Number(p.ctc) === Number(selectedCTC)
-        );
+    const matchesPlacementStatus =
+      placementStatusFilter === "all" ||
+      (placementStatusFilter === "placed" && hasPlacements) ||
+      (placementStatusFilter === "unplaced" && !hasPlacements);
 
-      return (
-        matchesGraduationYear &&
-        matchesCollege &&
-        matchesDepartment &&
-        matchesProgram &&
-        matchesPlacementStatus &&
-        matchesCompany &&
-        matchesCTC
+    const matchesCompany =
+      selectedCompany.length === 0 ||
+      allPlacements.some(p =>
+        selectedCompany.map(c => c.toLowerCase()).includes((p.companyName || p.company || "").toLowerCase())
       );
-    });
-  }, [
-    reports,
-    graduationYear,
-    selectedCollege,
-    selectedDepartment,
-    selectedProgram,
-    placementStatusFilter,
-    selectedCompany,
-    selectedCTC,
-  ]);
 
+    const matchesCTC =
+      !selectedCTC ||
+      allPlacements.some((p) =>
+        p.ctc != null && matchCTCRange(Number(p.ctc), selectedCTC)
+      );
 
+    return matchesPlacementStatus && matchesCompany && matchesCTC;
+  });
+}, [
+  baseFilteredReports,
+  placementStatusFilter,
+  selectedCompany,
+  selectedCTC
+]);
 
+// Step 3: Calculate stats using baseFilteredReports for total students
+const { totalStudents, totalPlacedStudents, totalPlacements } = useMemo(() => {
+  const totalStudents = baseFilteredReports.length;
+  let totalPlacedStudents = 0;
+  let totalPlacements = 0;
+  const placedStudentIds = new Set();
 
+  filteredReports.forEach((report) => {
+    const offCampusCount = (report.offCampusPlacements || []).filter(p => p.companyName || p.company).length;
+    const onCampusCount = (report.onCampusPlacements || []).filter(p => p.status === "Selected").length;
+    const total = offCampusCount + onCampusCount;
+    if (total > 0) {
+      placedStudentIds.add(report._id);
+      totalPlacements += total;
+    }
+  });
 
+  totalPlacedStudents = placedStudentIds.size;
+  return { totalStudents, totalPlacedStudents, totalPlacements };
+}, [baseFilteredReports, filteredReports]);
 
-  // Calculate total students, placed students, and total placements
-  // Calculate total students, placed students, and total placements
-  const { totalStudents, totalPlacedStudents, totalPlacements } = useMemo(() => {
-    const totalStudents = filteredReports.length;
-    let totalPlacedStudents = 0;
-    let totalPlacements = 0;
-
-    // Use a Set to track unique placed student IDs
-    const placedStudentIds = new Set();
-
-    filteredReports.forEach((report) => {
-      const offCampusCount = (report.offCampusPlacements || []).filter(
-        (placement) => placement && (placement.companyName || placement.company)
-      ).length;
-
-      const onCampusCount = (report.onCampusPlacements || []).filter(
-        (placement) => placement && placement.status === "Selected"
-      ).length;
-
-      const studentPlacements = offCampusCount + onCampusCount;
-
-      if (studentPlacements > 0) {
-        placedStudentIds.add(report._id); // Add student ID to the set if placed
-        totalPlacements += studentPlacements;
-      }
-    });
-
-    // Total placed students is the size of the set
-    totalPlacedStudents = placedStudentIds.size;
-
-    return { totalStudents, totalPlacedStudents, totalPlacements };
-  }, [filteredReports]);
 
 
 
@@ -297,12 +245,41 @@ const Reports = () => {
   };
 
 
-  const normalizeCTC = (val) => {
-  const n = Number(val);
-  if (!n || isNaN(n)) return 0;
-  return n < 1000 ? n * 100000 : n; // If it's < 1000, assume it's in LPA
-};
+  // filter for department and program
+    useEffect(() => {
+    if (!selectedCollege) {
+      setFilteredDepartments([]);
+      setSelectedDepartment("");
+      setFilteredPrograms([]);
+      setSelectedProgram("");
+      return;
+    }
 
+    const departmentsForCollege = departments.filter(
+      (d) => d.college === selectedCollege
+    );
+    setFilteredDepartments(departmentsForCollege);
+    setSelectedDepartment("");
+    setFilteredPrograms([]);
+    setSelectedProgram("");
+  }, [selectedCollege, departments]);
+
+  useEffect(() => {
+    if (!selectedDepartment) {
+      setFilteredPrograms([]);
+      setSelectedProgram("");
+      return;
+    }
+
+    const department = departments.find((d) => d._id === selectedDepartment);
+    const programIds = department?.programs || [];
+
+    const programsForDepartment = programs.filter((p) =>
+      programIds.includes(p._id)
+    );
+    setFilteredPrograms(programsForDepartment);
+    setSelectedProgram("");
+  }, [selectedDepartment, departments, programs]);
 
 
 
@@ -311,7 +288,7 @@ const Reports = () => {
       <h1 className="text-xl font-bold ">Placement Reports:</h1>
 
       {/* Filters Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 mb-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-3">
         <div>
           <label className="block font-medium">Graduation Year</label>
           <input
@@ -329,59 +306,47 @@ const Reports = () => {
         </div>
         <div>
           <label className="block font-medium">College</label>
-          <select
-            value={selectedCollege}
-            onChange={(e) => {
-              setSelectedCollege(e.target.value);
-              setSelectedDepartment("");
-              setSelectedProgram("");
-            }}
-            className="w-full border p-2 rounded"
-          >
+          <select value={selectedCollege} onChange={(e) => setSelectedCollege(e.target.value)} className="w-full border p-2 rounded">
             <option value="">All Colleges</option>
-            {colleges.map((c) => (
-              <option key={c._id} value={c._id}>
-                {c.name}
-              </option>
-            ))}
+            {colleges?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
           </select>
-
         </div>
+        {/* Department Filter */}
         <div>
           <label className="block font-medium">Department</label>
           <select
             value={selectedDepartment}
-            onChange={(e) => {
-              setSelectedDepartment(e.target.value);
-              setSelectedProgram(""); // reset program on department change
-            }}
+            onChange={(e) => setSelectedDepartment(e.target.value)}
             className="w-full border p-2 rounded"
+            disabled={!selectedCollege}
           >
             <option value="">All Departments</option>
-            {filteredDepartments.map((d) => (
+            {filteredDepartments?.map((d) => (
               <option key={d._id} value={d._id}>
                 {d.name}
               </option>
             ))}
           </select>
-
         </div>
+
+        {/* Program Filter */}
         <div>
           <label className="block font-medium">Program</label>
           <select
             value={selectedProgram}
             onChange={(e) => setSelectedProgram(e.target.value)}
             className="w-full border p-2 rounded"
+            disabled={!selectedDepartment}
           >
             <option value="">All Programs</option>
-            {filteredPrograms.map((p) => (
+            {filteredPrograms?.map((p) => (
               <option key={p._id} value={p._id}>
                 {p.name}
               </option>
             ))}
           </select>
-
         </div>
+
         <div>
           <label className="block font-medium">Company Name</label>
           <Select
@@ -393,13 +358,9 @@ const Reports = () => {
             placeholder="Filter by one or more companies…"
           />
         </div>
-        <div>
-          <label className="block font-medium">CTC (in LPA)</label>
-          <select value={selectedCTC} onChange={(e) => setSelectedCTC(e.target.value)} className="w-full border p-2 rounded">
-            <option value="">All CTCs</option>
-            {availableCTCs?.map((ctc, idx) => <option key={idx} value={ctc}>{ctc}</option>)}
-          </select>
-        </div>
+      <div>
+  <CTCRangeFilter selectedRange={selectedCTC} onChange={setSelectedCTC} />
+</div>
         <div>
           <label className="block font-medium">Placement Status</label>
           <select value={placementStatusFilter} onChange={(e) => setPlacementStatusFilter(e.target.value)} className="w-full border p-2 rounded">
@@ -425,6 +386,9 @@ const Reports = () => {
           <p className="text-lg font-bold text-purple-700">{totalPlacements}</p>
         </div>
       </div>
+{/* 
+      <PlacementCharts reports={filteredReports} departmentMap={departmentMap} /> */}
+
 
 
       {/* Download Button */}
@@ -440,8 +404,7 @@ const Reports = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="overflow-auto max-h-[600px] border rounded">
-
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto border rounded">
           {selectedStudentIds.length > 0 && (
             <ToggleEligibility
               selectedStudents={reports.filter((r) => selectedStudentIds.includes(r._id))}
@@ -725,13 +688,8 @@ const Reports = () => {
           </div>
         </div>
       )}
-
-
-
-
-
     </div>
   );
 };
 
-export default Reports;
+export default PlacementReports;

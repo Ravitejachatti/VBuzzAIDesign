@@ -11,7 +11,10 @@ export const fetchJobs = createAsyncThunk(
   "job/fetchJobs",
   async ({ universityName }, { rejectWithValue }) => {
     try {
+
       const token = localStorage.getItem("Student token");
+      console.log("Fetching jobs for university:", universityName);
+      console.log("Using token:", token);
       const response = await axios.get(
         `${BASE_URL}/student/jobs/getEligibleJobs`,
         {
@@ -20,6 +23,7 @@ export const fetchJobs = createAsyncThunk(
         }
       );
       // response.data is an array of job objects
+      console.log("Fetched jobs:", response.data);
       return response.data;
     } catch (err) {
       return rejectWithValue(

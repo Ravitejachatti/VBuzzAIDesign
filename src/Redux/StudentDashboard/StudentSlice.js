@@ -9,13 +9,13 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
  */
 export const fetchStudent = createAsyncThunk(
   "student/fetchStudent",
-  async ({ studentId, universityName }, { rejectWithValue }) => {
+  async ({ studentId, universityName, token }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("Student token");
+      const token2 = token || localStorage.getItem("Student token") ;
       const response = await axios.get(
         `${BASE_URL}/student/${studentId}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token2}` },
           params: { universityName },
         }
       );

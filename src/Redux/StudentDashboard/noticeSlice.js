@@ -105,3 +105,6 @@ const noticeSlice = createSlice({
 
 export const noticeReducer = noticeSlice.reducer;
 export default noticeSlice.reducer;
+
+
+

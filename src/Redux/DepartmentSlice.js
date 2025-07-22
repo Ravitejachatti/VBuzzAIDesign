@@ -15,7 +15,6 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export const deptUpdate = createAsyncThunk('/updatedept',async ({token,selectedDepartment,formData,universityName, thunkAPI})=>{
       try {
-        console.log("formdata updation data",formData)
      const res= await axios.put(`${BASE_URL}/department/updateDepartment/${selectedDepartment._id}?universityName=${universityName}`,
         {
           ...formData,
@@ -47,7 +46,6 @@ export const fetchDept = createAsyncThunk('/fetchdept',async({token,universityNa
           },
         }
       );
-      // console.log("Departments fetched in University Dashboard:", response.data);
       return response.data
       
     } catch (err) {
@@ -58,7 +56,6 @@ export const fetchDept = createAsyncThunk('/fetchdept',async({token,universityNa
 })
 
 export const deptDelete = createAsyncThunk('/deletedept',async ({token,id,universityName, thunkAPI})=>{
-   console.log(id,token,universityName)
     try {
         const res = await axios.delete(`${BASE_URL}/department/deleteDepartment/${id}?universityName=${universityName}`,
         {
@@ -80,7 +77,6 @@ export const adddept = createAsyncThunk('/adddept',async ({token,formData,univer
         college: formData.college,  // Adding college ID
         universityId: formData.universityId  // Adding university ID
       };
-      console.log("Department data", departmentData);
       let res=await axios.post(`${BASE_URL}/department/addDepartment?universityName=${encodeURIComponent(universityName)}`,
        departmentData,
         {
@@ -114,7 +110,6 @@ const deptSlice = createSlice({
             state.loading=false
         })
         .addCase(deptDelete.fulfilled,(state,action)=>{
-          console.log("dept",action.payload)
           alert("deleted dept")
           if(action.payload){
              let newstate= state.departments.filter((dept)=>dept._id!=action.payload._id)

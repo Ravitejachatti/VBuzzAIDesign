@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
-import ToggleEligibility from "../../CollegeDashboard/PlacementDashboard/PlacementReport/ToggleEligibility"
+import ToggleEligibility from "../PlacementReport/ToggleEligibility";
 import Select from "react-select";
 import { saveAs } from "file-saver";
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,7 +16,7 @@ import { fetchStudents ,selectStudentsLoading} from "../../../Redux/Placement/St
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const ViewStudents = () => {
+const StudentList = () => {
   const dispatch = useDispatch();
 
   const allColumns = [
@@ -685,4 +686,4 @@ const ViewStudents = () => {
   );
 };
 
-export default ViewStudents;
+export default StudentList;
