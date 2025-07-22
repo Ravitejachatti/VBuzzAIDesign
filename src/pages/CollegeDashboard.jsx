@@ -332,7 +332,7 @@ function CollegeDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
@@ -342,7 +342,7 @@ function CollegeDashboard() {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white/95 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Sidebar Header */}
@@ -518,9 +518,9 @@ function CollegeDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="lg:ml-80">
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
         {/* Top Header */}
-        <header className="bg-white/90 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-30">
+        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center space-x-4">
               <button
@@ -554,7 +554,7 @@ function CollegeDashboard() {
                 <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors relative">
                   <Search className="w-5 h-5" />
                 </button>
-                <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
+                <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors relative">
                   <Bell className="w-5 h-5" />
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
                 </button>
@@ -599,7 +599,7 @@ function CollegeDashboard() {
         </header>
 
         {/* Page Content */}
-        <main className="p-6 min-h-screen bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20">
+        <main className="flex-1 p-6 bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20 overflow-auto">
           <div className="max-w-full">
             {components[activeComponent]}
           </div>
