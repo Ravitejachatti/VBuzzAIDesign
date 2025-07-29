@@ -378,7 +378,7 @@ function CollegeDashboard() {
           </div>
           
           {/* User Info */}
-          <div className="mt-6 flex items-center space-x-3 relative z-10">
+          {/* <div className="mt-6 flex items-center space-x-3 relative z-10">
             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center ring-2 ring-white/30">
               <span className="text-sm font-semibold">
                 {user?.name?.charAt(0)?.toUpperCase() || 'A'}
@@ -391,10 +391,10 @@ function CollegeDashboard() {
                 <p className="text-blue-100 text-xs">{user?.role || 'College Admin'}</p>
               </div>
             </div>
-          </div>
+          </div> */}
           
           {/* Quick Stats */}
-          <div className="mt-6 grid grid-cols-3 gap-3 relative z-10">
+          {/* <div className="mt-6 grid grid-cols-3 gap-3 relative z-10">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
               <div className="text-lg font-bold">{stats.totalStudents}</div>
               <div className="text-xs text-blue-100">Students</div>
@@ -407,10 +407,10 @@ function CollegeDashboard() {
               <div className="text-lg font-bold">{stats.totalPrograms}</div>
               <div className="text-xs text-blue-100">Programs</div>
             </div>
-          </div>
+          </div> */}
           
           {/* Performance Indicator */}
-          <div className="mt-4 relative z-10">
+          {/* <div className="mt-4 relative z-10">
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-blue-100">Placement Rate</span>
               <span className="text-white font-semibold">{stats.placementRate}%</span>
@@ -421,7 +421,7 @@ function CollegeDashboard() {
                 style={{ width: `${stats.placementRate}%` }}
               ></div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Navigation */}
