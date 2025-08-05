@@ -12,7 +12,7 @@ import Contact from "../pages/contactus.jsx";
 import UniversityOnboarding from "../pages/UniversityOnboarding.jsx";
 // import UniversityPage from "../pages/UniversityDashboard.jsx";
 import CollegeDashboard from "../pages/CollegeDashboard.jsx";
-// import DepartmentDashboard from "../pages/DepartmentDashboard.jsx";
+import DepartmentDashboard from "../pages/DepartmentDashboard.jsx";
 // import PlacementDashboard from "../pages/PlacementDashboard.jsx";
 // import StudentDashboard from "../pages/StudentDashboard.jsx";
 // import PlacementDirectorPage from "../pages/PlacementDirectorPage.jsx";
@@ -91,7 +91,7 @@ const AllRoutes = () => {
             </ProtectedRoute>
           }
         />
-        {/* <Route
+        <Route
           path="/dashboard/:universityName/departments/:departmentName"
           element={
             <ProtectedRoute
@@ -101,7 +101,7 @@ const AllRoutes = () => {
               <DepartmentDashboard />
             </ProtectedRoute>
           }
-        /> */}
+        />
           {/* <Route
           path="/dashboard/:universityName/placementDirector/:placementDirectorName"
           element={
