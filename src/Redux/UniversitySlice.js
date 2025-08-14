@@ -14,7 +14,6 @@ export const editcollege = createAsyncThunk('/editcollege',
 export const updateCollege = createAsyncThunk('/updatecollege',
   async ({ token, universityName, id, selectedCollege }, thunkAPI) => {
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    console.log("Selected College Data:", selectedCollege);
     try {
       const res = await axios.put(
         `${BASE_URL}/college/colleges/${id}?universityName=${universityName}`,
@@ -42,8 +41,6 @@ export const updateCollege = createAsyncThunk('/updatecollege',
 export const fetchColleges = createAsyncThunk('/fetchcollege',
     async ({token,universityName})=>{
         try {
-          console.log("unv",universityName)
-          console.log("token", token)
       const response = await axios.get(
         `${BASE_URL}/college/colleges?universityName=${encodeURIComponent(universityName)}`,
         {
@@ -52,7 +49,6 @@ export const fetchColleges = createAsyncThunk('/fetchcollege',
           },
         }
       );
-      console.log("Colleges fetched:", response.data);
       return response.data
       
     } catch (err) {
@@ -86,8 +82,6 @@ export const fetchCollegeById = createAsyncThunk(
 export const addCollege=createAsyncThunk('/addcollege',async ({token,formData})=>{
 
     try {
-      console.log("formdata",formData)
-       console.log("name of college going backend",formData.name)
       const response = await axios.post(
        
         `${BASE_URL}/college/addcollege?universityName=${formData.universityName}`,
@@ -111,10 +105,8 @@ export const addCollege=createAsyncThunk('/addcollege',async ({token,formData})=
         }
         
       );
-
-      
       alert("college Added Successfully")
-      return formData
+      return response.data.college;
     } catch (err) {
       alert(err.response?.data?.error || "An error occurred while adding the college.")
       console.log(err.data)
@@ -125,7 +117,6 @@ export const addCollege=createAsyncThunk('/addcollege',async ({token,formData})=
 
 
 export const deleteCollege = createAsyncThunk('/delete',async ({token,collegeId,universityName})=>{
-  console.log("token for deleting college", token)
           try {
       await axios.delete(
         `${BASE_URL}/college/colleges/${collegeId}?universityName=${universityName}`,
@@ -194,7 +185,6 @@ const collegeslice=createSlice({
         })
         .addCase(updateCollege.fulfilled,(state,action)=>{
                const newDept = action.payload
-               console.log("opopop",newDept)
                 for (let i = 0; i < state.colleges.length; i++) {
                           const oldDept = state.colleges[i];
                           if (oldDept._id === newDept._id) {

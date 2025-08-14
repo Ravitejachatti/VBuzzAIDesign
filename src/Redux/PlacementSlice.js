@@ -18,9 +18,6 @@ export const fetchPlacements = createAsyncThunk(
         }
       );
 
-      // Log _before_ returning
-      console.log("fetched placements:", response.data.data);
-
       return response.data.data || [];
     } catch (err) {
       console.error("Failed to fetch placements:", err);

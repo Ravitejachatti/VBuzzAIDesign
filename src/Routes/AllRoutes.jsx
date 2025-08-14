@@ -10,9 +10,9 @@ import About from "../pages/About.jsx";
 import Services from "../pages/Service.jsx";
 import Contact from "../pages/contactus.jsx";
 import UniversityOnboarding from "../pages/UniversityOnboarding.jsx";
-import UniversityPage from "../pages/UniversityDashboard.jsx";
-// import CollegeDashboard from "../pages/CollegeDashboard.jsx";
-// import DepartmentDashboard from "../pages/DepartmentDashboard.jsx";
+// import UniversityPage from "../pages/UniversityDashboard.jsx";
+import CollegeDashboard from "../pages/CollegeDashboard.jsx";
+import DepartmentDashboard from "../pages/DepartmentDashboard.jsx";
 // import PlacementDashboard from "../pages/PlacementDashboard.jsx";
 // import StudentDashboard from "../pages/StudentDashboard.jsx";
 // import PlacementDirectorPage from "../pages/PlacementDirectorPage.jsx";
@@ -69,7 +69,7 @@ const AllRoutes = () => {
         <Route path="/" element={<UserLayout />}>
 
  {/* University Dashboard Routes */}
- <Route
+ {/* <Route
           path="/dashboard/:universityName"
           element={
             <ProtectedRoute
@@ -79,8 +79,8 @@ const AllRoutes = () => {
               <UniversityPage />
            </ProtectedRoute>
           }
-        />
-        {/* <Route
+        /> */}
+        <Route
           path="/dashboard/:universityName/colleges/:collegeName"
           element={
             <ProtectedRoute
@@ -90,8 +90,8 @@ const AllRoutes = () => {
               <CollegeDashboard />
             </ProtectedRoute>
           }
-        /> */}
-        {/* <Route
+        />
+        <Route
           path="/dashboard/:universityName/departments/:departmentName"
           element={
             <ProtectedRoute
@@ -101,7 +101,7 @@ const AllRoutes = () => {
               <DepartmentDashboard />
             </ProtectedRoute>
           }
-        /> */}
+        />
           {/* <Route
           path="/dashboard/:universityName/placementDirector/:placementDirectorName"
           element={

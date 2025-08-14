@@ -7,12 +7,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const addProgram = createAsyncThunk(
   'programs/add',
   async ({ token, universityName, finalProgramData }, thunkAPI) => {
-    try {
-      console.log(
-        "Final Data Sent to Backend:",
-        JSON.stringify(finalProgramData, null, 2)
-      );
-
+    try { 
       const response = await axios.post(
         `${BASE_URL}/program/addprogram?universityName=${encodeURIComponent(
           universityName
@@ -58,7 +53,6 @@ export const fetchProgram = createAsyncThunk(
           },
         }
       );
-      console.log("Programs fetched:", response.data.data);
       return response.data.data;
     } catch (err) {
       console.error("Error fetching programs:", err);
