@@ -41,27 +41,42 @@ function DashboardOverview({
   colleges, 
   departments, 
   programs, 
-  students 
+  students,
+  faculty,
+  activeJobs
 }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedPeriod, setSelectedPeriod] = useState('month');
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
+  const LiveClock = React.memo(function LiveClock() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return <span>{now.toLocaleTimeString()}</span>;
+});
+
+  // useEffect(() => {
+  //   const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
+  console.log("active jobs ", activeJobs)
   // Calculate statistics
   const stats = {
     totalStudents: students?.length || 0,
     totalDepartments: departments?.length || 0,
     totalPrograms: programs?.length || 0,
-    totalFaculty: 45, // This would come from faculty data
+    totalFaculty: faculty.length || 0, // This would come from faculty data
     placementRate: 85,
-    activeJobs: 12,
+    activeJobs: activeJobs.length,
     pendingApplications: 28,
     completedPlacements: 156
   };
+
+  console.log("active jobs")
+
 
   // Mock data for charts and activities
   const recentActivities = [
@@ -305,12 +320,8 @@ function DashboardOverview({
                 Welcome back, {user?.name || 'Admin'}! 👋
               </h1>
               <p className="text-blue-100 text-lg mb-4">
-                {collegeName} Dashboard • {currentTime.toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+                {collegeName}
+                 
               </p>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
@@ -319,7 +330,7 @@ function DashboardOverview({
                 </div>
                 <div className="flex items-center space-x-2">
                   <Clock className="w-4 h-4 text-blue-200" />
-                  <span className="text-blue-100">{currentTime.toLocaleTimeString()}</span>
+                  <span className="text-blue-100"><LiveClock/></span>
                 </div>
               </div>
             </div>
