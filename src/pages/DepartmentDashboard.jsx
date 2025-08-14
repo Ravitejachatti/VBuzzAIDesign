@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import DepartmentInfo from '../Dashboards/DepartmentDashboard/DepartmentInformation';
 import { useParams, useLocation } from 'react-router-dom';
-import ViewStudents from '../Dashboards/DepartmentDashboard/';
-import PlacementReports from "../Dashboards/DepartmentDashboard/ ";
+import ViewStudents from '../Dashboards/DepartmentDashboard/ViewStudents';
+import PlacementReports from "../Dashboards/DepartmentDashboard/PlacementReports";
 import DepartProgram from '../Dashboards/DepartmentDashboard/Programs/DepartProgram';
 import DepartFaculty from '../Dashboards/DepartmentDashboard/Faculty/DepartFaculty';
 import DepartNotice from '../Dashboards/DepartmentDashboard/Notice/DepartNotice';
