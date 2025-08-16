@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import ManageDepartments from './CollegeAddDepart';
-import DepartmentList from './CollegeListDepart'; 
+import  { useState } from 'react';
+import ManageNotice from './ManageNotice';
+import Notice from './Notice';
 
 
 
-function Departments({colleges, programs}) {
+function CollegeNotice() {
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -22,7 +22,7 @@ function Departments({colleges, programs}) {
                         borderRadius: '5px'
                     }}
                 >
-                   View Departments
+                   Add Notice
                 </button>
                 <button
                     onClick={() => setActiveTab('add')}
@@ -35,17 +35,19 @@ function Departments({colleges, programs}) {
                         borderRadius: '5px'
                     }}
                 >
-                    Add Departments
+                    View Notice
                 </button>
             </div>
 
             {/* Conditional Rendering */}
             <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '5px' }}>
-                {activeTab === 'add' && <ManageDepartments colleges={colleges} programs={programs} />}
-                {activeTab === 'edit' && <DepartmentList colleges={colleges} programs={programs}/>}
+                {activeTab === 'add' && <ManageNotice  />}
+                {activeTab === 'edit' && <Notice />}
             </div>
         </div>
     );
 }
 
-export default Departments;
+export default CollegeNotice;
+
+

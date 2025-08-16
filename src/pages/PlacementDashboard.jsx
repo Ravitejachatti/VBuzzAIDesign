@@ -19,7 +19,8 @@ import {
   TrendingUp,
   Calendar,
   Award,
-  Building
+  Building,
+  Shield
 } from "lucide-react";
 
 // Import components
@@ -46,6 +47,7 @@ import {fetchProgram} from "../Redux/programs.js";
 import { fetchStudents } from "../Redux/Placement/StudentsSlice.js";
 import { fetchNotices } from "../Redux/Placement/noticeSlice.js";
 import { fetchJobs } from "../Redux/Jobslice.js";
+import { fetchUniversityProfilePhoto } from "../Redux/UniversitySlice.js";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -73,6 +75,7 @@ const [notices, setNotices] = useState([]);
 const dispatch = useDispatch();
 const [jobs, setJobs] = useState([]);
 const [openJobs, setOpenJobs] = useState([]);
+const photoUrl = useSelector((state) => state.colleges.profileUrl);
 
   const token = localStorage.getItem("University authToken");
   const placementName = localStorage.getItem("placementName");
@@ -268,6 +271,28 @@ const fetchNotice = async () => {
   }
   setLoad(false);
 };
+     const fetchProfilePhoto = async () => {
+        if (!token) {
+          setError("Authentication token is missing.");
+          return;
+        }
+        setLoad(true);
+        try {
+          const result = await dispatch(fetchUniversityProfilePhoto({ token, universityName, BASE_URL }));
+          if (result.meta.requestStatus === "fulfilled") {
+            setError("");
+            setSuccess("Profile photo fetched successfully.");
+            // The URL is returned in the payload
+            // You can set it in the state if needed
+            // setPhotoUrl(result.payload);
+          } else {
+            setError("Something went wrong.");
+          }
+        } catch (err) {
+          setError("Failed to fetch profile photo.");
+        }
+        setLoad(false);
+      };
 
 useEffect(() => {
   const fetchAll = async () => {
@@ -280,6 +305,7 @@ useEffect(() => {
       fetchPrograms(),
       handleFetchStudents(),
       fetchNotice(),
+      fetchProfilePhoto()
       
     ]);
     console.log("✅ Completed fetchAll");
@@ -694,11 +720,30 @@ useEffect(() => {
         <div className="flex flex-col h-full">
           {/* Enhanced Header */}
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
-            <div className="flex items-center justify-between">
-              <div className="text-white">
-                <h2 className="text-xl font-bold">{placementName}</h2>
-                <p className="text-blue-100 text-sm">{universityName}</p>
+           
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center ring-2 ring-white/30">
+                                {/* add the image here */}
+                  {photoUrl ? ( 
+                    <img
+                      src={photoUrl}
+                      alt="University Logo"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <span className="text-lg font-semibold">    
+                      <Building2 className="w-6 h-6 text-white" />
+                    </span>
+                  )}
               </div>
+              <div>
+                <h1 className="text-blue-100 text-xl font-bold">{placementName || 'Department'}</h1>
+                <p className="text-blue-100 text-sm flex items-center">
+                  <Shield className="w-3 h-3 mr-1" />
+                  {universityName || 'University Name'}
+                </p>
+              </div>
+           
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="lg:hidden p-2 rounded-lg hover:bg-blue-500 text-white transition-colors"

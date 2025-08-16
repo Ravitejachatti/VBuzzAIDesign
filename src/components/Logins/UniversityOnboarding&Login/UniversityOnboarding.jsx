@@ -1905,6 +1905,7 @@ const UniversityRegistrationForm = () => {
       brochure: null, // File
       placementReport: null, // File
       campusPhotos: [], // Array of files
+      profilePhoto: null, 
     },
     authentication: {
       email: '',
@@ -2113,6 +2114,10 @@ const UniversityRegistrationForm = () => {
     formData.documents.campusPhotos.forEach((file) => {
       formPayload.append('campusPhotos', file);
     });
+
+    if (formData.documents.profilePhoto) {
+        formPayload.append('profilePhoto', formData.documents.profilePhoto); // 👈 add this
+      }
     formPayload.append('authentication', JSON.stringify(formData.authentication));
 
     console.log("form payload ", formPayload)
@@ -2599,6 +2604,29 @@ const UniversityRegistrationForm = () => {
             />
           </div>
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Profile Photo / Logo</label>
+          <input
+            type="file"
+            accept="image/*"
+            name="profilePhoto"
+            onChange={(e) => handleFileChange(e, 'documents', 'profilePhoto')}
+            className="w-full border p-2 rounded"
+          />
+          {formData.documents.profilePhoto && (
+            <p className="text-xs text-gray-500 mt-1">
+              Selected: {formData.documents.profilePhoto.name}
+            </p>
+          )}
+        </div>
+        {formData.documents.profilePhoto && (
+          <img
+            src={URL.createObjectURL(formData.documents.profilePhoto)}
+            alt="Preview"
+            className="mt-2 h-16 w-16 object-cover rounded"
+          />
+        )}
         {/* Authentication */}
         <div>
           <h3 className="text-lg font-semibold">Authentication</h3>

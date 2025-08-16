@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { 
   FaBuilding, 
@@ -18,8 +19,10 @@ import {
   FaClipboardList,
   FaFileAlt,
   FaBell,
-  FaSearch
+  FaSearch,
+  
 } from "react-icons/fa";
+import { Building2, Shield } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 // Import components
@@ -41,12 +44,16 @@ import Programs from "../Dashboards/UniversityDashboards/UniversityDashboards/Pr
 // import Admission from "../Dashboards/AdmissionDepartment/ components/ApplicationsTable";
  import Admission from "../Dashboards/UniversityDashboards/AdmissionDepartment/ components/ApplicationsTable";
 
+ import { fetchColleges, fetchUniversityProfilePhoto } from "../Redux/UniversitySlice";
+
+
 
 function UniversityDashboard() {
   const { universityName } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const dispatch = useDispatch();
 
   // State management
   const [departments, setDepartments] = useState([]);
@@ -55,6 +62,10 @@ function UniversityDashboard() {
   const [activeComponent, setActiveComponent] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [load, setLoad] = useState(false);
+  const [error, setError] = useState("");
+
+  const photoUrl = useSelector((state) => state.colleges.profileUrl);
 
   // User data from login
   const { user, message } = location.state || {};
@@ -142,7 +153,8 @@ function UniversityDashboard() {
         await Promise.all([
           fetchColleges(),
           fetchDepartments(),
-          fetchPrograms()
+          fetchPrograms(),
+          fetchProfilePhoto()
         ]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -193,6 +205,30 @@ function UniversityDashboard() {
       console.error("Failed to fetch programs:", err);
     }
   };
+  
+       const fetchProfilePhoto = async () => {
+          if (!token) {
+            setError("Authentication token is missing.");
+            return;
+          }
+          setLoad(true);
+          try {
+            const result = await dispatch(fetchUniversityProfilePhoto({ token, universityName, BASE_URL }));
+            if (result.meta.requestStatus === "fulfilled") {
+              setError("");
+              setSuccess("Profile photo fetched successfully.");
+              // The URL is returned in the payload
+              // You can set it in the state if needed
+              // setPhotoUrl(result.payload);
+            } else {
+              setError("Something went wrong.");
+            }
+          } catch (err) {
+            setError("Failed to fetch profile photo.");
+          }
+          setLoad(false);
+        };
+  
 
   // Handle logout
   const handleLogout = () => {
@@ -259,15 +295,27 @@ function UniversityDashboard() {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
-                <FaUniversity className="text-white text-xl" />
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center ring-2 ring-white/30">
+                                {/* add the image here */}
+                  {photoUrl ? ( 
+                    <img
+                      src={photoUrl}
+                      alt="University Logo"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <span className="text-lg font-semibold">    
+                      <Building2 className="w-6 h-6 text-white" />
+                    </span>
+                  )}
               </div>
               <div>
-                <h1 className="text-white font-bold text-lg">University Portal</h1>
-                <p className="text-blue-100 text-sm truncate">{universityName}</p>
+                <h1 className="text-blue-100 text-xl font-bold">{universityName || 'Department'}</h1>
+                <p className="text-blue-100 text-sm flex items-center">
+                  <Shield className="w-3 h-3 mr-1" />
+                  University Management Portal
+                </p>
               </div>
-            </div>
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"

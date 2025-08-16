@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { fetchPlacementReports } from "../../Redux/Placement/placementReportsSlice";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx"; // Import the xlsx library
-import ToggleEligibility from "../CollegeDashboard/PlacementDashboard/PlacementReport/ToggleEligibility"
+// import ToggleEligibility from "../PlacementDashboard/PlacementReport/ToggleEligibility"
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Select from 'react-select';
@@ -32,7 +32,7 @@ const Reports = () => {
   const [placementStatusFilter, setPlacementStatusFilter] = useState("all"); // "all", "placed", "unplaced"
 
   const [selectedCompany, setSelectedCompany] = useState([]);
-  const [selectedCTC, setSelectedCTC] = useState("");
+const [selectedCTCRange, setSelectedCTCRange] = useState("");
 
   const [availableCompanies, setAvailableCompanies] = useState([]);
   const [availableCTCs, setAvailableCTCs] = useState([]);
@@ -157,11 +157,24 @@ const Reports = () => {
             .map(c => c.toLowerCase())
             .includes((p.companyName || p.company || "").toLowerCase())
         );
-      const matchesCTC =
-        !selectedCTC ||
-        allPlacements.some((p) =>
-          p.ctc != null && Number(p.ctc) === Number(selectedCTC)
-        );
+   const matchesCTC = (() => {
+  if (!selectedCTCRange) return true;
+
+  return allPlacements.some((p) => {
+    const ctc = normalizeCTC(p.ctc);
+
+    switch (selectedCTCRange) {
+      case "<3L": return ctc < 300000;
+      case "3-5L": return ctc >= 300000 && ctc < 500000;
+      case "5-8L": return ctc >= 500000 && ctc < 800000;
+      case "8-11L": return ctc >= 800000 && ctc < 1100000;
+      case "11-14L": return ctc >= 1100000 && ctc < 1400000;
+      case ">14L": return ctc >= 1400000;
+      default: return true;
+    }
+  });
+})();
+
 
       return (
         matchesGraduationYear &&
@@ -181,7 +194,7 @@ const Reports = () => {
     selectedProgram,
     placementStatusFilter,
     selectedCompany,
-    selectedCTC,
+    selectedCTCRange,
   ]);
 
 
@@ -304,8 +317,6 @@ const Reports = () => {
 };
 
 
-
-
   return (
     <div className="p-4 border rounded w-full">
       <h1 className="text-xl font-bold ">Placement Reports:</h1>
@@ -395,7 +406,7 @@ const Reports = () => {
         </div>
         <div>
           <label className="block font-medium">CTC (in LPA)</label>
-          <select value={selectedCTC} onChange={(e) => setSelectedCTC(e.target.value)} className="w-full border p-2 rounded">
+          <select value={selectedCTCRange} onChange={(e) => setSelectedCTCRange(e.target.value)} className="w-full border p-2 rounded">
             <option value="">All CTCs</option>
             {availableCTCs?.map((ctc, idx) => <option key={idx} value={ctc}>{ctc}</option>)}
           </select>

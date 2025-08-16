@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://10.156.44.78:3003/api'; // Update with your API URL
+const BASE_URL = 'http://10.18.22.78:3003/api'; // Update with your API URL
 
 // Fetch student data
 export const fetchStudent = createAsyncThunk(
