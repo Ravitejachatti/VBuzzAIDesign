@@ -61,9 +61,8 @@ export const fetchAppliedJobs = createAsyncThunk(
  */
 export const fetchShortlistedRounds = createAsyncThunk(
   "job/fetchShortlistedRounds",
-  async ({ jobId, universityName }, { rejectWithValue }) => {
+  async ({ jobId, universityName, token }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("Student token");
       const response = await axios.get(
         `${BASE_URL}/student/jobs/getAllRounds`,
         {

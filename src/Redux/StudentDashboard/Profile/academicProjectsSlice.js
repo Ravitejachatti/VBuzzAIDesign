@@ -18,6 +18,7 @@ export const fetchAcademicProjects = createAsyncThunk(
       );
       // response.data.student is the full student object; we only want academicProjects
       return response.data.student.academicProjects || [];
+      
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
     }

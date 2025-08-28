@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { Dialog } from "@headlessui/react";
-import { 
-  Search, Filter, Building2, CheckCircle, XCircle, AlertCircle, Briefcase, 
+import {
+  Search, Filter, Building2, CheckCircle, XCircle, AlertCircle, Briefcase,
   TrendingUp, Eye, ExternalLink, Calendar, Users, Briefcase as BriefcaseIcon,
 } from 'lucide-react';
 import {
@@ -56,18 +56,32 @@ const JobOpportunities = () => {
     setViewModalOpen(true);
   };
 
-  const handleApply = (job) => {
+
+
+  const handleApply = async (job) => {
     if (job.status === "Closed" || applyingJobIds.includes(job._id)) return;
-    dispatch(applyToJob({ jobId: job._id, universityName }));
+
+    try {
+      const result = await dispatch(applyToJob({ jobId: job._id, universityName }));
+
+      if (applyToJob.fulfilled.match(result)) {
+        if (job.linkToApply) {
+          window.open(job.linkToApply, "_blank");
+        }
+      }
+    } catch (err) {
+      console.error("Error applying to job:", err);
+    }
   };
+
 
   const uniqueCompanies = [...new Set(eligibleJobs.map(job => job.company))];
 
   const filteredJobs = eligibleJobs.filter((job) => {
     const matchesSearch = searchTerm
       ? (job.title + job.company + job.description)
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
       : true;
 
     const matchesStatus = statusFilter === "all"
@@ -118,6 +132,10 @@ const JobOpportunities = () => {
       </div>
     );
   }
+
+  console.log("Filtered Jobs:", filteredJobs)
+  console.log("Jobs are:", eligibleJobs)
+
 
   return (
     <div className="p-6">
@@ -207,27 +225,38 @@ const JobOpportunities = () => {
                     <div className={`flex items-center px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(job.status)}`}>
                       {getStatusIcon(job.status)}
                       <span className="ml-1">{job.status}</span>
-                    </div>  
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center text-gray-600">
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
                       <Users className="w-4 h-4 mr-2" />
-                      <span className="text-sm">Min. {job.minPercentage}% required</span>
+                      Min. {job.minPercentage}% required
                     </div>
-                    <div className="flex items-center text-gray-600">
+                    <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2" />
-                      <span className="text-sm">
-                        Closes: {new Date(job.closingDate).toLocaleDateString()}
-                      </span>
+                      Closes: {new Date(job.closingDate).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center">
+                      <Briefcase className="w-4 h-4 mr-2" />
+                      Type: <span className="ml-1 font-medium">{job.type || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Building2 className="w-4 h-4 mr-2" />
+                      Location: <span className="ml-1 font-medium capitalize">{job.location || "Not specified"}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      CTC: <span className="ml-1 font-medium">{job.ctc ? `${job.ctc} LPA` : "N/A"}</span>
                     </div>
                   </div>
+
                 </div>
 
                 <div className="p-6">
                   <p className="text-gray-700 text-sm leading-relaxed mb-4">
-                    {job.description.length > 120 
-                      ? `${job.description.substring(0, 120)}...` 
+                    {job.description.length > 120
+                      ? `${job.description.substring(0, 120)}...`
                       : job.description
                     }
                     {job.description.length > 120 && (
@@ -255,13 +284,12 @@ const JobOpportunities = () => {
                     <button
                       onClick={() => handleApply(job)}
                       disabled={isApplying || job.status === "Closed"}
-                      className={`flex-1 px-4 py-2 rounded-lg font-medium flex items-center justify-center ${
-                        isApplying
+                      className={`flex-1 px-4 py-2 rounded-lg font-medium flex items-center justify-center ${isApplying
                           ? "bg-gray-400 text-white cursor-not-allowed"
                           : job.status === "Closed"
-                          ? "bg-gray-400 text-white cursor-not-allowed"
-                          : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105"
-                      }`}
+                            ? "bg-gray-400 text-white cursor-not-allowed"
+                            : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        }`}
                     >
                       {isApplying ? (
                         <>

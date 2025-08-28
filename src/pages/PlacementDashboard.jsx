@@ -38,6 +38,8 @@ import ManageNotice from "../Dashboards/PlacementDashboard/Notice/ManageNotice";
 import Profile from "../Dashboards/PlacementDashboard/PlacementProfile/Profile";
 import PlacementUpload from "../Dashboards/PlacementDashboard/PlacementReport/UploadPlacementData";
 import PlacementReports from "../Dashboards/PlacementDashboard/PlacementReport/PlacementReport";
+import PlacementProfile from "../Dashboards/PlacementDashboard/profile/PlacementProfile.jsx"
+
 // redux imports
 import { useDispatch, useSelector } from "react-redux";
 import {fetchColleges} from "../Redux/UniversitySlice.js";
@@ -363,10 +365,10 @@ useEffect(() => {
       category: "notices"
     },
     { 
-      id: "Profile", 
-      label: "Profile", 
-      icon: Settings,
-      category: "settings"
+        id: "PlacementProfile",
+    label: "Placement Profile",
+    icon: Settings,         // or a User icon if you prefer
+    category: "settings"
     }
   ];
 
@@ -653,12 +655,7 @@ useEffect(() => {
       programs={programs} 
       students={students}
     />,
-    Profile: <Profile 
-      user={user} 
-      colleges={colleges} 
-      departments={departments} 
-      programs={programs} 
-    />
+ PlacementProfile: <PlacementProfile />
   };
 
   if (isFetchingAll) {
