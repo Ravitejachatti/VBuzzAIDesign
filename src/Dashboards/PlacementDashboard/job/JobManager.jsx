@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchJobs, deleteJob, updateJob } from "../../../Redux/Jobslice";
 import Multiselect from "multiselect-react-dropdown";
 import LoadingSpinner from "../../../components/Resuable/LoadingSpinner";
-import AddSelectedApplicantsModal from "./AddSelectedApplicantsModal";  
 import {
   Briefcase,
   Building,
@@ -37,10 +36,6 @@ const JobManager = () => {
   const dispatch = useDispatch();
   const { jobs, loading } = useSelector((state) => state.jobs);
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL
-  const students = useSelector((s) => s.students?.students || s.students?.list || []);
-const [addApplicantsOpen, setAddApplicantsOpen] = useState(false);
-const [selectedJobForApplicants, setSelectedJobForApplicants] = useState(null);
 
   // UI/Data state
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -1026,16 +1021,7 @@ const [selectedJobForApplicants, setSelectedJobForApplicants] = useState(null);
         </div>
       </Dialog>
 
-      {/* --- NEW: Add Selected Applicants Modal --- */}
-<AddSelectedApplicantsModal
-  open={addApplicantsOpen}
-  onClose={() => setAddApplicantsOpen(false)}
-  jobId={selectedJobForApplicants?._id}
-  universityName={universityName}
-  token={token}
-  BASE_URL={BASE_URL}
-  students={students}
-/>
+
     </div>
   );
 };

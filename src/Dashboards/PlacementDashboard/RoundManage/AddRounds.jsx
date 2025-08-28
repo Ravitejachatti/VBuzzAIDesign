@@ -21,18 +21,19 @@ import ApplicantsModal from "./AddRound/ApplicantModal";
 import AddRoundModal from "./AddRound/AddRoundModal2";
 import UpdateRoundModal from "./AddRound/UpdateRoundModal";
 
+// NEW
+import AddSelectedApplicantsModal from "./AddRound/AddSelectedApplicantsModal";
+
 const AddRound = () => {
   const { universityName } = useParams();
   const dispatch = useDispatch();
   const token = localStorage.getItem("University authToken");
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL; // NEW
 
   // ✅ Select from store BEFORE any effects that use these
-  // ✅ SAFE SELECTORS (avoid destructuring undefined)
   const jobsState = useSelector((s) => s.jobs);
   const jobs = jobsState?.jobs ?? [];
   const jobsLoading = jobsState?.loading ?? false;
-
-  console.log("jobs in rounds are:", jobs)
 
   // 👇 your rounds slice is mounted as "roundsData" in the store
   const roundsState = useSelector((s) => s.roundsData);
@@ -48,19 +49,27 @@ const AddRound = () => {
   const [selectedJobTitle, setSelectedJobTitle] = useState("");
 
   // Modals
-  const [showRoundsModal, setShowRoundsModal] = useState(false); // (unchanged list view)
+  const [showRoundsModal, setShowRoundsModal] = useState(false);
   const [showAddRoundModal, setShowAddRoundModal] = useState(false);
   const [showUpdateRoundModal, setShowUpdateRoundModal] = useState(false);
   const [showApplicantsModal, setShowApplicantsModal] = useState(false);
 
+  // NEW: modal for adding selected applicants
+  const [addApplicantsOpen, setAddApplicantsOpen] = useState(false);
+  const [selectedJobForApplicants, setSelectedJobForApplicants] = useState(null);
+  const [studentsForAddSelected, setStudentsForAddSelected] = useState([]); // what we pass to modal
+
   const [selectedRoundIndex, setSelectedRoundIndex] = useState(null);
 
-const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
   const [roundData, setRoundData] = useState({ name: "", date: today, description: "", pdfLink: "", examLink: "" });
   const [updateRoundData, setUpdateRoundData] = useState({ name: "", date: "", description: "", pdfLink: "", examLink: "" });
   const [applicants, setApplicants] = useState([]);
-   const [loadingApplicants, setLoadingApplicants] = useState(false);
- const [applicantsError, setApplicantsError] = useState(null);
+  const [loadingApplicants, setLoadingApplicants] = useState(false);
+  const [applicantsError, setApplicantsError] = useState(null);
+
+  const [showSelectApplicantsModal, setShowSelectApplicantsModal] = useState(false); // (kept, unused here)
+  const [selectedApplicants, setSelectedApplicants] = useState([]); // (kept, unused here)
 
   // fetch jobs
   useEffect(() => {
@@ -77,13 +86,12 @@ const today = new Date().toISOString().slice(0, 10);
       : sorted;
     const bySearch = searchTerm
       ? byDept.filter((j) =>
-        j.title?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+          j.title?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
       : byDept;
 
     setFilteredJobs(bySearch);
   }, [jobs, selectedDepartment, searchTerm]);
-
 
   // excel upload (kept as is)
   const handleFileUpload = (e) => {
@@ -93,75 +101,107 @@ const today = new Date().toISOString().slice(0, 10);
     reader.onload = (evt) => {
       const wb = XLSX.read(evt.target.result, { type: "binary" });
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-   setApplicants(
-  rows.map((r) => ({
-    registered_number: String(r.registered_number ?? r.reg_no ?? "").trim(),
-    name: String(r.name ?? r.student_name ?? "").trim(),
-    message: String(r.message ?? r.status ?? "").trim(), // <-- important
-    feedback: String(r.feedback ?? "").trim(),
-  }))
-);
-
+      setApplicants(
+        rows.map((r) => ({
+          registered_number: String(r.registered_number ?? r.reg_no ?? "").trim(),
+          name: String(r.name ?? r.student_name ?? "").trim(),
+          message: String(r.message ?? r.status ?? "").trim(),
+          feedback: String(r.feedback ?? "").trim(),
+        }))
+      );
     };
     reader.readAsBinaryString(file);
   };
 
-
-
+  // open add round and prefetch applicants for that job (existing flow)
   const openAddRoundForJob = async (job) => {
-  setSelectedJobId(job._id);
-  setSelectedJobTitle(job.title);
-  setApplicants([]);
-  setApplicantsError(null);
-  setLoadingApplicants(true);
+    setSelectedJobId(job._id);
+    setSelectedJobTitle(job.title);
+    setApplicants([]);
+    setApplicantsError(null);
+    setLoadingApplicants(true);
 
-  console.log(`[AddRound] Fetching applicants for job ${job._id} (${job.title})…`);
+    try {
+      const res = await dispatch(
+        fetchApplicantsByJob({ token, universityName, jobId: job._id })
+      ).unwrap();
 
-  try {
-    const res = await dispatch(
-      fetchApplicantsByJob({ token, universityName, jobId: job._id })
-    ).unwrap();
-     console.log("[AddRound] fetchApplicantsByJob raw result:", res);
+      const raw = res?.applicants ?? res?.data?.applicants ?? res ?? [];
+      const normalized = (Array.isArray(raw) ? raw : []).map((a, idx) => {
+        const name =
+          a?.name ||
+          a?.studentName ||
+          [a?.firstName, a?.lastName].filter(Boolean).join(" ") ||
+          a?.student?.name ||
+          [a?.student?.firstName, a?.student?.lastName].filter(Boolean).join(" ") ||
+          "Unnamed";
+        const registered_number =
+          a?.registered_number ||
+          a?.reg_no ||
+          a?.registrationNumber ||
+          a?.roll ||
+          a?.student?.registered_number ||
+          a?.student?.registrationNumber ||
+          a?.student?.regNo ||
+          "";
+        return {
+          id: a?._id || a?.id || registered_number || `row-${idx}`,
+          name,
+          registered_number,
+        };
+      });
 
-    // Allow various response shapes
-    const raw = res?.applicants ?? res?.data?.applicants ?? res ?? [];
+      setApplicants(normalized.filter(a => a.registered_number && a.name));
+    } catch (err) {
+      setApplicantsError(err?.response?.data?.message || err?.message || "Failed to fetch applicants");
+    } finally {
+      setLoadingApplicants(false);
+      setShowAddRoundModal(true);
+    }
+  };
 
-    const normalized = (Array.isArray(raw) ? raw : []).map((a, idx) => {
-      const name =
-        a?.name ||
-        a?.studentName ||
-        [a?.firstName, a?.lastName].filter(Boolean).join(" ") ||
-        a?.student?.name ||
-        [a?.student?.firstName, a?.student?.lastName].filter(Boolean).join(" ") ||
-        "Unnamed";
+  // NEW: open "Add Selected Applicants" button flow
+  const openAddSelectedForJob = async (job) => {
+    setSelectedJobForApplicants(job);
+    setStudentsForAddSelected([]); // reset
+    try {
+      // Use same API (your constraint): fetch applicants for this job,
+      // then allow selecting some of them again (or supplement manually).
+      const res = await dispatch(
+        fetchApplicantsByJob({ token, universityName, jobId: job._id })
+      ).unwrap();
 
-      const registered_number =
-        a?.registered_number ||
-        a?.reg_no ||
-        a?.registrationNumber ||
-        a?.roll ||
-        a?.student?.registered_number ||
-        a?.student?.registrationNumber ||
-        a?.student?.regNo ||
-        "";
+      const raw = res?.applicants ?? res?.data?.applicants ?? res ?? [];
+      const normalized = (Array.isArray(raw) ? raw : []).map((a, idx) => {
+        const name =
+          a?.name ||
+          a?.studentName ||
+          [a?.firstName, a?.lastName].filter(Boolean).join(" ") ||
+          a?.student?.name ||
+          [a?.student?.firstName, a?.student?.lastName].filter(Boolean).join(" ") ||
+          "Unnamed";
+        const reg =
+          a?.registered_number ||
+          a?.reg_no ||
+          a?.registrationNumber ||
+          a?.roll ||
+          a?.student?.registered_number ||
+          a?.student?.registrationNumber ||
+          a?.student?.regNo ||
+          "";
+        return { id: a?._id || a?.id || reg || `row-${idx}`, name, registered_number: reg };
+      });
 
-      return {
-        id: a?._id || a?.id || registered_number || `row-${idx}`,
-        name,
-        registered_number,
-      };
-    });
-
-    setApplicants(normalized.filter(a => a.registered_number && a.name));
-  } catch (err) {
-    console.error("[AddRound] fetchApplicantsByJob failed:", err);
-    setApplicantsError(err?.response?.data?.message || err?.message || "Failed to fetch applicants");
-  } finally {
-    setLoadingApplicants(false);
-    setShowAddRoundModal(true);
-  }
-};
-
+      setStudentsForAddSelected(
+        normalized.filter((s) => s.registered_number && s.name)
+      );
+    } catch (e) {
+      // If this call ever fails, modal still opens—user can add manual reg numbers.
+      console.error("[AddSelected] fetchApplicantsByJob failed:", e);
+    } finally {
+      setAddApplicantsOpen(true);
+    }
+  };
 
   const getDepartmentName = (deptIds = []) => {
     const label =
@@ -172,7 +212,7 @@ const today = new Date().toISOString().slice(0, 10);
     return label + (deptIds.length > 2 ? ` +${deptIds.length - 2} more` : "");
   };
 
-  const handleAddRound = async (selectedApplicants) => {
+  const handleAddRound = async (selectedApplicantsList) => {
     if (!selectedJobId) {
       alert("Pick a job first.");
       return;
@@ -181,24 +221,22 @@ const today = new Date().toISOString().slice(0, 10);
       alert("Round name, date, and description are required.");
       return;
     }
-   if (!Array.isArray(selectedApplicants) || selectedApplicants.length === 0) {
-     alert("Please select at least one applicant.");
-     return;
-   }
+    if (!Array.isArray(selectedApplicantsList) || selectedApplicantsList.length === 0) {
+      alert("Please select at least one applicant.");
+      return;
+    }
 
-    // keep the date as 'YYYY-MM-DD' (matches your Postman success)
     const payload = { ...roundData, date: roundData.date };
-
 
     try {
       await dispatch(
-            addRound({
-         token,
-         universityName,
-         jobId: selectedJobId,
-         roundData: payload,
-         applicants: selectedApplicants,  // <- only what modal selected
-       })
+        addRound({
+          token,
+          universityName,
+          jobId: selectedJobId,
+          roundData: payload,
+          applicants: selectedApplicantsList,
+        })
       ).unwrap();
       alert("Round added successfully!");
       await dispatch(fetchRoundsByJob({ token, universityName, jobId: selectedJobId })).unwrap();
@@ -206,21 +244,16 @@ const today = new Date().toISOString().slice(0, 10);
       setRoundData({ name: "", date: "", description: "", pdfLink: "", examLink: "" });
       setApplicants([]);
     } catch (e) {
-    // show backend validation message if present
-    const msg = e?.message || e?.error || e?.errors || "Failed to add round";
-    console.error("[addRound] error:", e);
-    alert(typeof msg === "string" ? msg : JSON.stringify(msg));
+      const msg = e?.message || e?.error || e?.errors || "Failed to add round";
+      console.error("[addRound] error:", e);
+      alert(typeof msg === "string" ? msg : JSON.stringify(msg));
     }
   };
-
-
-
 
   useEffect(() => {
     console.log("[Rounds] roundsList updated:", roundsList?.length ?? 0);
     console.debug("[Rounds] roundsList:", roundsList);
   }, [roundsList]);
-
 
   const handleUpdateRound = async () => {
     if (selectedRoundIndex == null) return alert("Select a round to update.");
@@ -342,8 +375,11 @@ const today = new Date().toISOString().slice(0, 10);
                   </div>
                   <div className="flex flex-col items-end space-y-2">
                     <span
-                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${new Date(job.closingDate) > new Date() ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                        }`}
+                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                        new Date(job.closingDate) > new Date()
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
                     >
                       {new Date(job.closingDate) > new Date() ? "Active" : "Expired"}
                     </span>
@@ -366,25 +402,37 @@ const today = new Date().toISOString().slice(0, 10);
 
               <div className="p-4 bg-gray-50 flex justify-between items-center">
                 <button
-                onClick={() => {
-   setSelectedJobId(job._id);
-  setSelectedJobTitle(job.title);
-   dispatch(fetchRoundsByJob({ token, universityName, jobId: job._id }));
-  setShowRoundsModal(true);
- }}
+                  onClick={() => {
+                    setSelectedJobId(job._id);
+                    setSelectedJobTitle(job.title);
+                    dispatch(fetchRoundsByJob({ token, universityName, jobId: job._id }));
+                    setShowRoundsModal(true);
+                  }}
                   className="flex items-center text-purple-600 hover:text-purple-800 transition-colors"
                 >
                   <Eye className="w-4 h-4 mr-1" />
                   <span className="text-sm font-medium">View Rounds</span>
                 </button>
 
-                <button
-                 onClick={() => openAddRoundForJob(job)}
-                  className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  <span className="text-sm">Add Round</span>
-                </button>
+                <div className="flex items-center gap-3">
+                  {/* NEW: Add Selected */}
+                  <button
+                    onClick={() => openAddSelectedForJob(job)}
+                    className="flex items-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    title="Add selected applicants by registration number"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="text-sm">Add Selected</span>
+                  </button>
+
+                  <button
+                    onClick={() => openAddRoundForJob(job)}
+                    className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="text-sm">Add Round</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -465,7 +513,7 @@ const today = new Date().toISOString().slice(0, 10);
                             setSelectedRoundIndex(index);
                             setUpdateRoundData({
                               name: round?.name || "",
-                              date: (round?.date || "").slice(0, 10), // if API stores ISO, trim to YYYY-MM-DD
+                              date: (round?.date || "").slice(0, 10),
                               description: round?.description || "",
                               pdfLink: round?.pdfLink || "",
                               examLink: round?.examLink || "",
@@ -523,8 +571,8 @@ const today = new Date().toISOString().slice(0, 10);
         setRoundData={setRoundData}
         handleFileUpload={handleFileUpload}
         applicants={applicants}
-         loadingApplicants={loadingApplicants}
- applicantsError={applicantsError}
+        loadingApplicants={loadingApplicants}
+        applicantsError={applicantsError}
         handleAddRound={handleAddRound}
       />
 
@@ -535,6 +583,17 @@ const today = new Date().toISOString().slice(0, 10);
         updateRoundData={updateRoundData}
         setUpdateRoundData={setUpdateRoundData}
         handleUpdateRound={handleUpdateRound}
+      />
+
+      {/* ----- NEW: Add Selected Applicants Modal (mounted once) ----- */}
+      <AddSelectedApplicantsModal
+        open={addApplicantsOpen}
+        onClose={() => setAddApplicantsOpen(false)}
+        jobId={selectedJobForApplicants?._id}
+        universityName={universityName}
+        token={token}
+        BASE_URL={BASE_URL}
+        students={studentsForAddSelected}
       />
     </div>
   );

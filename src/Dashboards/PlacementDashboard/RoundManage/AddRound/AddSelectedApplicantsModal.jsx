@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { addSelectedApplicants, resetSelectedApplicantsState, selectAddSelectedApplicantsStatus, selectAddSelectedApplicantsError } from "../../../Redux/Placement/addSelectedApplicants";
+import { addSelectedApplicants, resetSelectedApplicantsState, selectAddSelectedApplicantsStatus, selectAddSelectedApplicantsError } from "../../../../Redux/Placement/addSelectedApplicants";
 import { Search, X } from "lucide-react";
 
 /**

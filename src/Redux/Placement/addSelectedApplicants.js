@@ -14,11 +14,11 @@ export const addSelectedApplicants = createAsyncThunk(
 "selectedApplicants/add",
 async ({ BASE_URL, universityName, jobId, registeredNumbers, token }, { rejectWithValue }) => {
 try {
-const url = `${BASE_URL}/job/jobs/addSelectedApplicants?universityName=${encodeURIComponent(
+const url = `${BASE_URL}/job/jobs/${jobId}/addSelectedApplicants?universityName=${encodeURIComponent(
 universityName
 )}`;
 const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-const body = { jobId, registeredNumbers };
+const body = {registeredNumbers };
 const { data } = await axios.post(url, body, { headers });
 return data;
 } catch (err) {
