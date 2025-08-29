@@ -19,6 +19,26 @@ import {
   Eye, X, Users,User, Mail, Phone, CheckCircle, XCircle, Building, Briefcase, Award
 } from "lucide-react";
 
+
+
+// --- helpers: build a single, clean placements list per student
+const normalizePlacements = (r) => {
+  const off = (r.offCampusPlacements || [])
+    .filter(p => p?.companyName || p?.company)              // real off-campus offers only
+    .map(p => ({ company: p.companyName || p.company, ctc: p.ctc }));
+
+  const on = (r.onCampusPlacements || [])
+    .filter(p => p?.status === "Selected" && p?.company)     // selected on-campus only
+    .map(p => ({ company: p.company, ctc: p.ctc }));
+
+  return [...off, ...on];
+};
+
+const getTotalPlacements = (r) => normalizePlacements(r).length;
+
+const getCompaniesAndCTCs = (r) =>
+  normalizePlacements(r).map(p => `${p.company} (${p.ctc ?? "N/A"})`); 
+
 const PlacementReports = () => {
   const dispatch = useDispatch();
   const { universityName } = useParams();
@@ -57,19 +77,23 @@ const PlacementReports = () => {
   const programMap = useMemo(() => Object.fromEntries(programs.map(p => [p._id, p.name])), [programs]);
 
   // 🎯 3️⃣ Dynamic filter options
-  useEffect(() => {
-    const companies = new Set();
-    const ctcs = new Set();
-    reports.forEach((r) => {
-      const placements = [...(r.offCampusPlacements || []), ...(r.onCampusPlacements || []).filter(p => p.status === "Selected")];
-      placements.forEach((p) => {
-        if (p.companyName || p.company) companies.add(p.companyName || p.company);
-        if (p.ctc != null) ctcs.add(p.ctc);
-      });
+useEffect(() => {
+  const companies = new Set();
+  const ctcs = new Set();
+
+  reports.forEach((r) => {
+    normalizePlacements(r).forEach(p => {
+      if (p.company) companies.add(p.company);
+      if (p.ctc !== undefined && p.ctc !== null && p.ctc !== "") {
+        ctcs.add(Number(p.ctc));
+      }
     });
-    setAvailableCompanies([...companies].sort());
-    setAvailableCTCs([...ctcs].sort((a, b) => b - a));
-  }, [reports]);
+  });
+
+  setAvailableCompanies([...companies].sort());
+  setAvailableCTCs([...ctcs].sort((a, b) => b - a));
+}, [reports]);
+
 
   // 🎯 4️⃣ Cascading filters for College -> Dept -> Program
   useEffect(() => {
@@ -95,17 +119,6 @@ const PlacementReports = () => {
     setFilteredPrograms(programs.filter(p => progIds.includes(p._id)));
   }, [selectedDepartment, departments, programs]);
 
-  const getCompaniesAndCTCs = (r) => {
-  const companies = [];
-  (r.offCampusPlacements || []).forEach(p => {
-    if (p.companyName) companies.push(`${p.companyName} (${p.ctc || 'N/A'})`);
-  });
-  (r.onCampusPlacements || []).forEach(p => {
-    if (p.status === "Selected" && p.company)
-      companies.push(`${p.company} (${p.ctc || 'N/A'})`);
-  });
-  return companies;
-};
 
   // 🎯 5️⃣ Base + advanced filters
   const baseFilteredReports = useMemo(() => reports.filter(r =>
@@ -115,35 +128,43 @@ const PlacementReports = () => {
     (!selectedProgram || r.programId === selectedProgram)
   ), [reports, graduationYear, selectedCollege, selectedDepartment, selectedProgram]);
 
-  const filteredReports = useMemo(() => baseFilteredReports.filter(r => {
-    const placements = [...(r.offCampusPlacements || []), ...(r.onCampusPlacements || []).filter(p => p.status === "Selected")];
-    const hasPlacements = placements.length > 0;
-    const matchStatus = placementStatusFilter === "all" || (placementStatusFilter === "placed" && hasPlacements) || (placementStatusFilter === "unplaced" && !hasPlacements);
-    const matchCompany = selectedCompany.length === 0 || placements.some(p => selectedCompany.map(c => c.toLowerCase()).includes((p.companyName || p.company || '').toLowerCase()));
-    const matchCTC = !selectedCTC || placements.some(p => p.ctc && matchCTCRange(Number(p.ctc), selectedCTC));
-    return matchStatus && matchCompany && matchCTC;
-  }), [baseFilteredReports, placementStatusFilter, selectedCompany, selectedCTC]);
+const filteredReports = useMemo(() => {
+  return baseFilteredReports.filter(r => {
+    const eff = normalizePlacements(r);
+    const hasPlacements = eff.length > 0;
+
+    // Placement status
+    if (placementStatusFilter === "placed" && !hasPlacements) return false;
+    if (placementStatusFilter === "unplaced" && hasPlacements) return false;
+
+    // Company filter
+    if (selectedCompany.length > 0) {
+      const wanted = new Set(selectedCompany.map(c => c.toLowerCase()));
+      const matchCompany = eff.some(p => wanted.has((p.company || "").toLowerCase()));
+      if (!matchCompany) return false;
+    }
+
+    // CTC range
+    if (selectedCTC) {
+      const matchCTC = eff.some(p => p.ctc != null && matchCTCRange(Number(p.ctc), selectedCTC));
+      if (!matchCTC) return false;
+    }
+
+    return true;
+  });
+}, [baseFilteredReports, placementStatusFilter, selectedCompany, selectedCTC]);
+
 
   // 🎯 6️⃣ Summary stats (fixes your `totalStudents` error!)
 const stats = useMemo(() => {
   let placedStudentsCount = 0;
   let totalPlacements = 0;
 
-baseFilteredReports.forEach(r => {
-  // Ensure placements exist before counting 
-  if (r.offCampusPlacements || r.onCampusPlacements) {
-    const offCampusCount = (r.offCampusPlacements || []).filter(p => p.companyName || p.company).length;
-    const onCampusCount = (r.onCampusPlacements || []).filter(p => p.status === "Selected").length;
-    const totalStudentPlacements = offCampusCount + onCampusCount;
-
-    console.log(`Student: ${r.name}, Off-Campus: ${offCampusCount}, On-Campus: ${onCampusCount}, Total Placements: ${totalStudentPlacements}`);
-
-    if (totalStudentPlacements > 0) {
-      placedStudentsCount += 1;
-    }
-    totalPlacements += totalStudentPlacements;
-  }
-});
+  baseFilteredReports.forEach(r => {
+    const count = normalizePlacements(r).length;
+    if (count > 0) placedStudentsCount += 1;
+    totalPlacements += count;
+  });
 
   return {
     totalStudents: baseFilteredReports.length,
@@ -152,11 +173,6 @@ baseFilteredReports.forEach(r => {
   };
 }, [baseFilteredReports]);
 
-  const getTotalPlacements = (r) => {
-    const off = (r.offCampusPlacements || []).filter(p => p.companyName || p.company).length;
-    const on = (r.onCampusPlacements || []).filter(p => p.status === "Selected").length;
-    return off + on;
-  };
 
   const handleStatusUpdate = async () => {
     await dispatch(fetchPlacementReports({ token, universityName, graduationYear }));
@@ -184,6 +200,12 @@ baseFilteredReports.forEach(r => {
     XLSX.writeFile(wb, "placement_reports.xlsx");
   };
 
+// add this near other memos/state inside the component
+const expandedStudent = useMemo(
+  () => filteredReports.find((r) => r._id === expandedStudentId),
+  [filteredReports, expandedStudentId]
+);
+const expandedCompanies = expandedStudent ? getCompaniesAndCTCs(expandedStudent) : [];
 
 
 
@@ -674,13 +696,12 @@ baseFilteredReports.forEach(r => {
               </div>
             </div>
             <div className="p-6 overflow-y-auto">
-              <ol className="list-decimal pl-5 space-y-2">
-                {getCompaniesAndCTCs(
-                  filteredReports.find((r) => r._id === expandedStudentId)
-                )?.map((entry, idx) => (
-                  <li key={idx} className="text-sm text-gray-700">{entry}</li>
-                ))}
-              </ol>
+            <ol className="list-decimal pl-5 space-y-2">
+  {expandedCompanies.map((entry, idx) => (
+    <li key={idx} className="text-sm text-gray-700">{entry}</li>
+  ))}
+</ol>
+
             </div>
           </div>
         </div>

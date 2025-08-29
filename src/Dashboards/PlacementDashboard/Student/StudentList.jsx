@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
 import ToggleEligibility from "../PlacementReport/ToggleEligibility";
@@ -30,14 +29,27 @@ import {
   Building,
   CheckCircle,
   XCircle,
-  Eye,
   FileText
 } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Normalize any id-like value (object with _id or raw string/number) to string
+const getId = (x) => (x && typeof x === "object" ? x._id : x)?.toString();
+
 const StudentList = () => {
   const dispatch = useDispatch();
+  const { universityName } = useParams();
+  const token = localStorage.getItem("University authToken");
+
+  // Redux state
+  const colleges = useSelector((state) => state.colleges.colleges) || [];
+  const departments = useSelector((state) => state.department.departments) || [];
+  const programs = useSelector((state) => state.programs.programs) || [];
+  const students = useSelector((state) => state.students.students) || [];
+  const loading  = useSelector(selectStudentsLoading);
+  const singleError = useSelector(selectSingleError);
+  const singleStudentStatus = useSelector(selectSingleStatus);
 
   const allColumns = [
     { label: "Name", value: "name" },
@@ -67,47 +79,25 @@ const StudentList = () => {
     { label: "Masters CGPA", value: "masters_cgpa" },
     { label: "Can Apply", value: "can_apply" },
   ];
-  const [selectedColumns, setSelectedColumns] = useState([]); // Default all selected
-  const { universityName } = useParams();
-  const token = localStorage.getItem("University authToken");
-    const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
-  // Get from Redux store
-  const colleges = useSelector((state) => state.colleges.colleges) || [];
-  const departments = useSelector((state) => state.department.departments) || [];
-  const programs = useSelector((state) => state.programs.programs) || [];
-  const students = useSelector((state) => state.students.students) || [];
-  const loading  = useSelector(selectStudentsLoading);
-  const singleError = useSelector(selectSingleError);
+  const [selectedColumns, setSelectedColumns] = useState([]);
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
-  const getCollegeName = (collegeId) => {
-  const college = colleges.find((c) => c._id === collegeId);
-  return college ? college.name : "N/A";
-};
+  // Graduation years (sorted)
+  const graduationYears = useMemo(() =>
+    Array.from(new Set(students.map((s) => s.graduation_year)))
+      .filter(Boolean)
+      .sort((a,b) => a - b)
+  , [students]);
 
-const getDepartmentName = (departmentId) => {
-  const dept = departments.find((d) => d._id === departmentId);
-  return dept ? dept.name : "N/A";
-};
-
-const singleStudentStatus = useSelector(selectSingleStatus);
-  
-
-  // derive graduationYears from the student objects
-  const graduationYears = Array.from(
-    new Set(students.map((s) => s.graduation_year))
-  );
-
-  const [programId, setProgramId] = useState("");
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [filters, setFilters] = useState({
     graduationYear: "",
     college: "",
     department: "",
-    programId: ""  // ✅ Add this
+    programId: ""
   });
-  console.log("colleges:", colleges)
-  console.log("Departments:", departments)
+
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [editFormData, setEditFormData] = useState({
     canApply: "",
@@ -121,32 +111,51 @@ const singleStudentStatus = useSelector(selectSingleStatus);
     password: "",
   });
 
-  // Add new state for search
+  // Search
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchType, setSearchType] = useState("name"); // 'name' or 'registration'
+  const [searchType, setSearchType] = useState("name");
 
+  const getProgramName = (programId) => {
+    const program = programs.find((p) => getId(p._id) === getId(programId));
+    return program ? program.name : "N/A";
+    };
+
+  const formatDate = (dob) => {
+    if (!dob) return '';
+    const date = new Date(dob);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const calculateAge = (dob) => {
+    if (!dob) return '';
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+  };
 
   const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this student?")) return;
-    dispatch(deleteStudent({
-      studentId: id,
-      token,
-      universityName,
-      BASE_URL
-    })).then((action) => {
-      if (action.type.endsWith('/fulfilled')) {
-        alert("Student deleted successfully!");
-        dispatch(fetchStudents({ token, universityName, BASE_URL }));
-      } else {
-        alert("Delete failed: " + (singleError || 'Unknown error'));
-      }
-    });
+    dispatch(deleteStudent({ studentId: id, token, universityName, BASE_URL }))
+      .then((action) => {
+        if (action.type.endsWith('/fulfilled')) {
+          alert("Student deleted successfully!");
+          dispatch(fetchStudents({ token, universityName, BASE_URL }));
+        } else {
+          alert("Delete failed: " + (singleError || 'Unknown error'));
+        }
+      });
   };
 
   const handleEditClick = (student) => {
     setEditingStudentId(student._id);
     setEditFormData({
-      canApply: student.canApply || "",
+      canApply: String(!!student.canApply),
       name: student.name || "",
       email: student.email || "",
       registered_number: student.registered_number || "",
@@ -154,37 +163,32 @@ const singleStudentStatus = useSelector(selectSingleStatus);
       enrollment_year: student.enrollment_year || "",
       graduation_year: student.graduation_year || "",
       username: student.credentials?.username || "",
-      password: "", // Do not pre-fill password for security reasons
+      password: "",
     });
   };
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-    dispatch(editStudent({
-      studentId: editingStudentId,
-      data: editFormData,
-      token,
-      universityName,
-      BASE_URL
-    })).then((action) => {
-      if (action.type.endsWith('/fulfilled')) {
-        alert("Student updated successfully!");
-        setEditingStudentId(null);
-            dispatch(fetchStudents({ token, universityName, BASE_URL }));
-      } else {
-        alert("Update failed: " + (singleError || 'Unknown error'));
-      }
-    });
+    const payload = {
+      ...editFormData,
+      canApply: editFormData.canApply === "true" || editFormData.canApply === true,
+    };
+    dispatch(editStudent({ studentId: editingStudentId, data: payload, token, universityName, BASE_URL }))
+      .then((action) => {
+        if (action.type.endsWith('/fulfilled')) {
+          alert("Student updated successfully!");
+          setEditingStudentId(null);
+          dispatch(fetchStudents({ token, universityName, BASE_URL }));
+        } else {
+          alert("Update failed: " + (singleError || 'Unknown error'));
+        }
+      });
   };
-
 
   const handleCancelEdit = () => {
     setEditingStudentId(null);
@@ -201,39 +205,36 @@ const singleStudentStatus = useSelector(selectSingleStatus);
     });
   };
 
+  // ✅ Dependent filter resets
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [name]: value,
-    }));
+    setFilters((prev) => {
+      if (name === "college") {
+        return { ...prev, college: value, department: "", programId: "" };
+      }
+      if (name === "department") {
+        return { ...prev, department: value, programId: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
-
-
-  // Update the student's canApply status in the filtered list
+  // Reflect canApply updates locally (used by ToggleEligibility)
   const handleStatusUpdate = (studentId, canApply) => {
-    setFilteredStudents((prevStudents) =>
-      prevStudents.map((student) =>
-        student._id === studentId ? { ...student, canApply } : student
-      )
-    );
+    setFilteredStudents((prev) => prev.map((s) => (s._id === studentId ? { ...s, canApply } : s)));
   };
 
-
-
+  // Filter + search
   useEffect(() => {
     const filtered = students.filter((student) => {
       const { graduationYear, college, department, programId } = filters;
 
-      // Apply filters
       const filterMatch =
         (!graduationYear || student.graduation_year === parseInt(graduationYear)) &&
-        (!college || student.collegeId === college) &&
-        (!department || student.departmentId === department) &&
-        (!programId || student.programId === programId);
+        (!college || getId(student.collegeId) === getId(college)) &&
+        (!department || getId(student.departmentId) === getId(department)) &&
+        (!programId || getId(student.programId) === getId(programId));
 
-      // Apply search
       let searchMatch = true;
       if (searchTerm) {
         if (searchType === "name") {
@@ -245,66 +246,22 @@ const singleStudentStatus = useSelector(selectSingleStatus);
 
       return filterMatch && searchMatch;
     });
+
     setFilteredStudents(filtered);
   }, [students, filters, searchTerm, searchType]);
 
-  // Add search handler
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  const handleSearch = (e) => setSearchTerm(e.target.value);
+  const handleSearchTypeChange = (e) => { setSearchType(e.target.value); setSearchTerm(""); };
 
-  const handleSearchTypeChange = (e) => {
-    setSearchType(e.target.value);
-    setSearchTerm(""); // Clear search term when changing search type
-  };
-
-
-
-
-  // to find the total number of students fetched and displayed along side the student list
   const totalStudents = filteredStudents.length;
 
-  const getProgramName = (programId) => {
-    const program = programs.find((program) => program._id === programId);
-    return program ? program.name : "N/A";
-  };
-
-  // form of date of birth:
-  const formatDate = (dob) => {
-    if (!dob) return '';
-    const date = new Date(dob);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  // calculate the date of birth 
-  const calculateAge = (dob) => {
-    if (!dob) return '';
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
   const downloadExcel = () => {
-    if (filteredStudents.length === 0) {
-      alert("No students to export.");
-      return;
-    }
-    if (selectedColumns.length === 0) {
-      alert("Please select at least one column to export.");
-      return;
-    }
+    if (filteredStudents.length === 0) return alert("No students to export.");
+    if (selectedColumns.length === 0) return alert("Please select at least one column to export.");
 
-    const selectedKeys = selectedColumns.map(col => col.value);
+    const selectedKeys = selectedColumns.map((c) => c.value);
 
-    const formattedStudents = filteredStudents.map((student, index) => {
+    const formatted = filteredStudents.map((student, index) => {
       const row = { SNo: index + 1 };
       if (selectedKeys.includes("name")) row.Name = student.name || "";
       if (selectedKeys.includes("registered_number")) row["Registration Number"] = student.registered_number || "";
@@ -314,8 +271,8 @@ const singleStudentStatus = useSelector(selectSingleStatus);
       if (selectedKeys.includes("age")) row.Age = calculateAge(student.dateOfBirth);
       if (selectedKeys.includes("gender")) row.Gender = student.gender || "";
       if (selectedKeys.includes("caste")) row.Caste = student.caste || "";
-      if (selectedKeys.includes("college")) row.College = colleges.find(c => c._id === student.collegeId)?.name || "N/A";
-      if (selectedKeys.includes("department")) row.Department = departments.find(d => d._id === student.departmentId)?.name || "N/A";
+      if (selectedKeys.includes("college")) row.College = colleges.find(c => getId(c._id) === getId(student.collegeId))?.name || "N/A";
+      if (selectedKeys.includes("department")) row.Department = departments.find(d => getId(d._id) === getId(student.departmentId))?.name || "N/A";
       if (selectedKeys.includes("program")) row.Program = getProgramName(student.programId);
       if (selectedKeys.includes("graduation_year")) row["Graduation Year"] = student.graduation_year || "";
       if (selectedKeys.includes("tenth_school")) row["10th School"] = student.tenth?.institutionName || "";
@@ -335,14 +292,14 @@ const singleStudentStatus = useSelector(selectSingleStatus);
       return row;
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(formattedStudents);
+    const worksheet = XLSX.utils.json_to_sheet(formatted);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Students_Selected_Columns.xlsx");
   };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -359,7 +316,7 @@ const singleStudentStatus = useSelector(selectSingleStatus);
 
   return (
     <div className="space-y-8">
-      {/* Header Section */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
@@ -373,14 +330,13 @@ const singleStudentStatus = useSelector(selectSingleStatus);
         </div>
       </div>
 
-      {/* Filters and Search Section */}
+      {/* Filters & Search */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div className="flex items-center mb-6">
           <Filter className="w-5 h-5 text-gray-600 mr-2" />
           <h2 className="text-xl font-semibold text-gray-900">Filters & Search</h2>
         </div>
 
-        {/* Filters Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -413,7 +369,7 @@ const singleStudentStatus = useSelector(selectSingleStatus);
             >
               <option value="">All Colleges</option>
               {colleges.map((college) => (
-                <option key={college._id} value={college._id}>{college.name}</option>
+                <option key={college._id} value={getId(college._id)}>{college.name}</option>
               ))}
             </select>
           </div>
@@ -428,9 +384,9 @@ const singleStudentStatus = useSelector(selectSingleStatus);
             >
               <option value="">All Departments</option>
               {departments
-                .filter((department) => department.college === filters.college)
+                .filter((department) => getId(department.college) === getId(filters.college))
                 .map((department) => (
-                  <option key={department._id} value={department._id}>{department.name}</option>
+                  <option key={department._id} value={getId(department._id)}>{department.name}</option>
                 ))}
             </select>
           </div>
@@ -448,15 +404,15 @@ const singleStudentStatus = useSelector(selectSingleStatus);
             >
               <option value="">All Programs</option>
               {programs
-                .filter((program) => program.department === filters.department)
+                .filter((program) => getId(program?.department) === getId(filters.department))
                 .map((program) => (
-                  <option key={program._id} value={program._id}>{program.name}</option>
+                  <option key={program._id} value={getId(program._id)}>{program.name}</option>
                 ))}
             </select>
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1">
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
@@ -490,7 +446,7 @@ const singleStudentStatus = useSelector(selectSingleStatus);
           </div>
         </div>
 
-        {/* Export Section */}
+        {/* Export */}
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -575,9 +531,7 @@ const singleStudentStatus = useSelector(selectSingleStatus);
               {filteredStudents?.length > 0 ? (
                 filteredStudents.map((student, index) => (
                   <tr key={student._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {index + 1}
-                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -613,27 +567,19 @@ const singleStudentStatus = useSelector(selectSingleStatus);
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        <div className="font-medium">{colleges.find((college) => college._id === student.collegeId)?.name}</div>
-                        <div className="text-gray-500">{departments.find((department) => department._id === student.departmentId)?.name}</div>
+                        <div className="font-medium">{colleges.find((c) => getId(c._id) === getId(student.collegeId))?.name}</div>
+                        <div className="text-gray-500">{departments.find((d) => getId(d._id) === getId(student.departmentId))?.name}</div>
                         <div className="text-gray-500">{getProgramName(student.programId)}</div>
                         <div className="text-gray-500">Class of {student.graduation_year}</div>
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        <div className="mb-1">
-                          <span className="font-medium">10th:</span> {student.tenth?.percentageOrCGPA}
-                        </div>
-                        <div className="mb-1">
-                          <span className="font-medium">12th:</span> {student.twelfth?.percentageOrCGPA}
-                        </div>
-                        <div className="mb-1">
-                          <span className="font-medium">UG:</span> {student.bachelors?.percentageOrCGPA}
-                        </div>
+                        <div className="mb-1"><span className="font-medium">10th:</span> {student.tenth?.percentageOrCGPA}</div>
+                        <div className="mb-1"><span className="font-medium">12th:</span> {student.twelfth?.percentageOrCGPA}</div>
+                        <div className="mb-1"><span className="font-medium">UG:</span> {student.bachelors?.percentageOrCGPA}</div>
                         {student.masters?.percentageOrCGPA && (
-                          <div>
-                            <span className="font-medium">Masters:</span> {student.masters?.percentageOrCGPA}
-                          </div>
+                          <div><span className="font-medium">Masters:</span> {student.masters?.percentageOrCGPA}</div>
                         )}
                       </div>
                     </td>
@@ -678,9 +624,7 @@ const singleStudentStatus = useSelector(selectSingleStatus);
                           if (e.target.checked) {
                             setSelectedStudentIds((prev) => [...prev, student._id]);
                           } else {
-                            setSelectedStudentIds((prev) =>
-                              prev.filter((id) => id !== student._id)
-                            );
+                            setSelectedStudentIds((prev) => prev.filter((id) => id !== student._id));
                           }
                         }}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -717,7 +661,7 @@ const singleStudentStatus = useSelector(selectSingleStatus);
                 </button>
               </div>
             </div>
-            
+
             <form onSubmit={handleEditSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>

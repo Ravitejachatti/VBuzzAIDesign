@@ -20,6 +20,7 @@ import {
   MapPin,
   Briefcase,
   Eye,
+  DollarSign,
   X,
   ChevronDown,
   TrendingUp
@@ -199,24 +200,6 @@ useEffect(() => {
     return age;
   };
 
-  // const handleFilterChange = () => {
-  //   const filtered = applicants.filter((applicant) => {
-  //     const matchesSearch = !searchTerm || 
-  //       applicant.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       applicant.registered_number?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-  //     const matchesCollege = selectedColleges.length === 0 || selectedColleges.some((college) => applicant.collegeId === college.value);
-  //     const matchesDepartment = selectedDepartments.length === 0 || selectedDepartments.some((dept) => applicant.departmentId === dept.value);
-  //     const matchesProgram = selectedPrograms.length === 0 || selectedPrograms.some((program) => applicant.programId === program.value);
-      
-  //     return matchesSearch && matchesCollege && matchesDepartment && matchesProgram;
-  //   });
-  //   setFilteredApplicants(filtered);
-  // };
-
-  // useEffect(() => {
-  //   handleFilterChange();
-  // }, [selectedColleges, selectedDepartments, selectedPrograms, searchTerm, applicants]);
 
   const jobOptions = jobs.map((job) => ({ value: job._id, label: job.title }));
   const selectedJob = jobs.find(job => job._id === jobId);
@@ -312,27 +295,59 @@ const notAppliedStudents = studentList.filter(stu => {
   return notApplied && matchesHierarchy && matchesSearch && matchesCollege && matchesDepartment && matchesProgram;
 });
 
-// console.log("SelectedJob colleges", selectedJob.colleges);
-// console.log("SelectedJob departments", selectedJob.departments);
-// console.log("SelectedJob programs", selectedJob.programs);
-// console.log("Applicants", applicantIds);
-// console.log("StudentList count", studentList.length);
+console.log("selected job:", selectedJob)
+console.log("filteredApplicants who has applied for the jobs:", filteredApplicants)
 
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Job Applications</h1>
-            <p className="text-blue-100 text-lg">View and manage student applications for jobs</p>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">{filteredApplicants.length}</div>
-            <div className="text-blue-200 text-sm">Total Applicants</div>
-          </div>
-        </div>
+     {selectedJob && (
+  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+    <div className="flex items-center mb-4">
+      <Briefcase className="w-6 h-6 text-blue-600 mr-3" />
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">{selectedJob.title}</h1>
+        <p className="text-gray-600 text-sm">{selectedJob.company}</p>
       </div>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-800">
+      <div className="flex items-center">
+        <Building className="w-4 h-4 text-gray-500 mr-2" />
+        <span><strong>Company:</strong> {selectedJob.company}</span>
+      </div>
+      <div className="flex items-center">
+        <MapPin className="w-4 h-4 text-gray-500 mr-2" />
+        <span><strong>Location:</strong> {selectedJob.location || "N/A"}</span>
+      </div>
+      <div className="flex items-center">
+        <DollarSign className="w-4 h-4 text-gray-500 mr-2" />
+        <span><strong>CTC:</strong> {selectedJob.ctc} LPA</span>
+      </div>
+      <div className="flex items-center">
+        <Calendar className="w-4 h-4 text-gray-500 mr-2" />
+        <span><strong>Closing Date:</strong> {new Date(selectedJob.closingDate).toLocaleDateString()}</span>
+      </div>
+      <div className="flex items-center">
+        <GraduationCap className="w-4 h-4 text-gray-500 mr-2" />
+        <span><strong>Eligible Passing Year:</strong> {selectedJob.passingYear || "All"}</span>
+      </div>
+      <div className="flex items-center">
+        <Award className="w-4 h-4 text-gray-500 mr-2" />
+        <span><strong>Min % Required:</strong> {selectedJob.minPercentage || "Not Specified"}%</span>
+      </div>
+      <div className="flex items-center col-span-full">
+        <FileText className="w-4 h-4 text-gray-500 mr-2" />
+        <span><strong>Job Type:</strong> {selectedJob.type}</span>
+      </div>
+      <div className="col-span-full">
+        <p className="mt-2 text-gray-700"><strong>Description:</strong></p>
+        <p className="text-gray-600">{selectedJob.description}</p>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Job Selection */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
@@ -467,140 +482,8 @@ const notAppliedStudents = studentList.filter(stu => {
         </div>
       )}
 
-      {/* Results */}
-      {/* {!loading && !error && filteredApplicants.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Applications ({filteredApplicants.length})
-              </h3>
-              <div className="flex items-center text-sm text-gray-600">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                {jobs.find(job => job._id === jobId)?.title} - {jobs.find(job => job._id === jobId)?.company}
-              </div>
-            </div>
-          </div>
+     
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Personal</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Education</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredApplicants.map((student, idx) => (
-                  <tr key={student._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {idx + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <User className="w-5 h-5 text-blue-600" />
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                          <div className="text-sm text-gray-500">{student.registered_number}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        <div className="flex items-center mb-1">
-                          <Mail className="w-3 h-3 mr-1 text-gray-400" />
-                          <span className="truncate max-w-[150px]">{student.email}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Phone className="w-3 h-3 mr-1 text-gray-400" />
-                          {student.phone}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        <div className="font-medium">{formatDate(student.dateOfBirth)}</div>
-                        <div className="text-gray-500">Age: {calculateAge(student.dateOfBirth)}</div>
-                        <div className="text-gray-500">{student.gender}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        <div className="font-medium">{collegeMap[student.collegeId]}</div>
-                        <div className="text-gray-500">{departmentMap[student.departmentId]}</div>
-                        <div className="text-gray-500">{programMap[student.programId]}</div>
-                        <div className="text-gray-500">
-                         
-  {student.graduation_year ? `Class of ${student.graduation_year}` : 'Graduation year not available'}
-
-                          </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        <div className="mb-1">
-                          <span className="font-medium">10th:</span> {student.tenth?.percentageOrCGPA}
-                        </div>
-                        <div className="mb-1">
-                          <span className="font-medium">12th:</span> {student.twelfth?.percentageOrCGPA}
-                        </div>
-                        <div className="mb-1">
-                          <span className="font-medium">UG:</span> {student.bachelors?.percentageOrCGPA}
-                        </div>
-                        {student.masters?.percentageOrCGPA && (
-                          <div>
-                            <span className="font-medium">Masters:</span> {student.masters?.percentageOrCGPA}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        student.canApply 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {student.canApply ? 'Eligible' : 'Ineligible'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => {
-                          setViewStudent(student);
-                          setShowModal(true);
-                        }}
-                        className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )} */}
-
-      {/* No Results */}
-      {/* {!loading && !error && jobId && filteredApplicants.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No applicants found</h3>
-          <p className="text-gray-500">No students have applied for this job yet.</p>
-        </div>
-      )} */}
 
       {/* Tab Switcher */}
       <div className="flex space-x-4 mb-4">

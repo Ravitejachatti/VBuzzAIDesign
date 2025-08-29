@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   User, GraduationCap, BookOpen, Award, Phone, Users,
-  FileText, Shield, Settings, CheckCircle, Clock, AlertCircle
+  FileText, Shield, Settings
 } from 'lucide-react';
 
 import UpdatePersonalDetails from "./Profile/PersonalDetails";
@@ -62,18 +62,6 @@ const ProfileManagement = () => {
     }
   };
 
-  const getCompletionIcon = (percentage) => {
-    if (percentage === 100) return <CheckCircle className="w-4 h-4 text-green-500" />;
-    if (percentage > 0) return <Clock className="w-4 h-4 text-yellow-500" />;
-    return <AlertCircle className="w-4 h-4 text-red-500" />;
-  };
-
-  const getCompletionColor = (percentage) => {
-    if (percentage === 100) return "bg-green-100 text-green-600";
-    if (percentage > 0) return "bg-yellow-100 text-yellow-600";
-    return "bg-red-100 text-red-600";
-  };
-
   return (
     <div className="p-6 min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -87,7 +75,6 @@ const ProfileManagement = () => {
             {profileSections.map(section => {
               const Icon = section.icon;
               const isActive = activeSection === section.id;
-              const completion = 0; // Static for now (optional: replace with logic later)
               return (
                 <button
                   key={section.id}
@@ -98,19 +85,13 @@ const ProfileManagement = () => {
                       : 'text-gray-700 hover:bg-gray-50 hover:shadow-md'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-blue-500'}`} />
-                      <span className="font-medium text-sm">{section.name}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`text-xs px-2 py-1 rounded-full ${isActive ? 'bg-white/20 text-white' : getCompletionColor(completion)}`}>
-                        {completion}%
-                      </span>
-                      {getCompletionIcon(completion)}
-                    </div>
+                  <div className="flex items-center space-x-3">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-blue-500'}`} />
+                    <span className="font-medium text-sm">{section.name}</span>
                   </div>
-                  <p className={`text-xs mt-1 ${isActive ? 'text-white/80' : 'text-gray-500'}`}>{section.description}</p>
+                  <p className={`text-xs mt-1 ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                    {section.description}
+                  </p>
                 </button>
               );
             })}
