@@ -1,6 +1,6 @@
 import CollegeInformation from "./collegeInfo";
 
-const Index = () => {
+const Index = (collegeId, token , universityName) => {
   const sampleData = {
     collegeName: "Springfield University",
     collegeCode: "SPU2024",
@@ -25,6 +25,7 @@ const Index = () => {
     achievements: ["Top 100 Universities 2023", "Research Excellence Award", "Sustainability Champion"],
     partnerships: ["Tech Industries Consortium", "Local Community Foundation", "International Exchange Program"]
   };
+  console.log("Index component initialized with collegeId, token, universityName:", collegeId, token, universityName);
 
   const handleSave = (data) => {
     console.log("Saving college data:", data);
@@ -33,8 +34,12 @@ const Index = () => {
 
   return (
     <CollegeInformation 
-      initialData={sampleData}
-      onSave={handleSave}
+      collegeId
+      token 
+      universityName
+      // initialData={sampleData}
+      // onSave={handleSave}
+    
     />
   );
 };

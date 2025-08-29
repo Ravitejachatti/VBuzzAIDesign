@@ -48,7 +48,7 @@ import {
 // Import components
 import DashboardOverview from '../Dashboards/CollegeDashboard/DashboardOverview';
 import ViewStudents from '../Dashboards/CollegeDashboard/Student/ViewStudents';
-import CollegeInfo from '../Dashboards/CollegeDashboard/collegeInfo/index';
+import CollegeInfo from '../Dashboards/CollegeDashboard/collegeInfo/collegeInfo';
 import Reports from '../Dashboards/CollegeDashboard/placement/Reports';
 import JobOpenings from '../Dashboards/CollegeDashboard/JobOpenings';
 import Notices from '../Dashboards/CollegeDashboard/Notices';
@@ -59,6 +59,7 @@ import CollegeNotice from '../Dashboards/CollegeDashboard/Notice/CollegeNotice';
 import CollegeJob from '../Dashboards/CollegeDashboard/job/CollegeJob';
 import AddFaculty from '../Dashboards/CollegeDashboard/Faculty/AddFaculty';
 import ManageFaculty from '../Dashboards/CollegeDashboard/Faculty/ManageFaculty';
+import DepartFaculty from '../Dashboards/DepartmentDashboard/Faculty/DepartFaculty';
 import LoadingSpinner from '../components/Resuable/LoadingSpinner';
 
 // Redux imports
@@ -299,8 +300,7 @@ console.log("openjobs ", photoUrl)
         { id: 'ViewStudents', label: 'Students', icon: Users, description: 'Manage student records', count: stats.totalStudents },
         { id: 'CollegeDepart', label: 'Departments', icon: Building2, description: 'Department management', count: stats.totalDepartments },
         { id: 'CollegeProgram', label: 'Programs', icon: BookOpen, description: 'Academic programs', count: stats.totalPrograms },
-        { id: 'AddFaculty', label: 'Add Faculty', icon: UserCheck, description: 'Add new faculty members' },
-        { id: 'ManageFaculty', label: 'Manage Faculty', icon: GraduationCap, description: 'Faculty management', count: stats.totalFaculty }
+        { id: 'DepartFaculty', label: 'DepartFaculty', icon: UserCheck, description: 'Add new faculty members', count: stats.totalFaculty  }
       ]
     },
     {
@@ -354,18 +354,20 @@ console.log("openjobs ", photoUrl)
     CollegeInfo: (
       <CollegeInfo
         collegeId={user?.collegeId}
-        colleges={collegesData}
-        departments={departmentsData}
-        programs={programsData}
-        collegeName={CollegeName}
-        user={user}
+        token={token}
+        universityName={universityName}
+        // colleges={collegesData}
+        // departments={departmentsData}
+        // programs={programsData}
+        // collegeName={CollegeName}
+        // user={user}
       />
     ),
     CollegeDepart: (<CollegeDepart  colleges={collegesData} programs={programsData}  />),
     CollegeProgram: (<CollegeProgram colleges={collegesData} departments={departmentsData} programs={programsData}/>),
     CollegeNotice: (<CollegeNotice />),
     CollegeJob: (<CollegeJob />),
-    AddFaculty: (<AddFaculty />),
+    DepartFaculty: (<DepartFaculty />),
     ManageFaculty: (
       <ManageFaculty
         collegeId={user?.collegeId}
@@ -614,7 +616,7 @@ console.log("openjobs ", photoUrl)
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
+     <div className="flex-1 flex flex-col min-h-screen lg:ml-0 min-w-0">
         {/* Top Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
           <div className="flex items-center justify-between px-6 py-4">
@@ -695,7 +697,7 @@ console.log("openjobs ", photoUrl)
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20 overflow-auto">
+        <main className="flex-1 min-w-0 p-6 bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20 overflow-auto">
           <div className="max-w-full">
             {components[activeComponent]}
           </div>

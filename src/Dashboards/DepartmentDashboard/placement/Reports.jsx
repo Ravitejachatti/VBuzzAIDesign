@@ -9,6 +9,11 @@ import {
   Eye, X, Users, User, Mail, Phone, CheckCircle, XCircle, Building, Briefcase, Award
 } from "lucide-react";
 
+/* --- Tiny inline skeleton to reserve space while loading --- */
+function Skeleton({ className = "" }) {
+  return <div className={`animate-pulse rounded bg-gray-200 ${className}`} />;
+}
+
 const PlacementReports = () => {
   const dispatch = useDispatch();
   const { universityName } = useParams();
@@ -93,7 +98,6 @@ const PlacementReports = () => {
       setSelectedProgram("");
       return;
     }
-    // If your department model stores program ids, prefer that:
     const dept = departments.find(d => d._id === selectedDepartment);
     const progIds = dept?.programs || [];
     const progs = progIds.length
@@ -220,120 +224,146 @@ const PlacementReports = () => {
   };
 
   return (
-    <div className="p-4 border rounded w-full">
-      <h1 className="text-xl font-bold">Placement Reports:</h1>
+    <div className="p-4 border rounded w-full min-w-0 [scrollbar-gutter:stable]">
+      <h1 className="text-xl font-bold">Placements</h1>
+      <p className="text-sm text-gray-500 mb-4">Placement analytics</p>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-3">
-        <div>
-          <label className="block font-medium">Graduation Year</label>
-          <input
-            type="number"
-            value={graduationYear}
-            onChange={(e) => setGraduationYear(e.target.value)}
-            className="w-full border p-2 rounded"
-            min="2000"
-            max={currentYear + 5}
-          />
-          {loading && <div className="mt-2 text-blue-500">Loading data...</div>}
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-4">
+        <div className="flex items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Placement Reports:</h2>
         </div>
 
-        <div>
-          <label className="block font-medium">College</label>
-          <select
-            value={selectedCollege}
-            onChange={(e) => setSelectedCollege(e.target.value)}
-            className="w-full border p-2 rounded"
-          >
-            <option value="">All Colleges</option>
-            {colleges?.map((c) => (
-              <option key={c._id} value={c._id}>{c.name}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div>
+            <label className="block font-medium">Graduation Year</label>
+            <input
+              type="number"
+              value={graduationYear}
+              onChange={(e) => setGraduationYear(e.target.value)}
+              className="w-full border p-2 rounded"
+              min="2000"
+              max={currentYear + 5}
+            />
+            {loading ? (
+              <div className="mt-2"><Skeleton className="h-4 w-28" /></div>
+            ) : error ? (
+              <p className="text-red-500 text-sm mt-1">{error}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="block font-medium">College</label>
+            <select
+              value={selectedCollege}
+              onChange={(e) => setSelectedCollege(e.target.value)}
+              className="w-full border p-2 rounded"
+            >
+              <option value="">All Colleges</option>
+              {colleges?.map((c) => (
+                <option key={c._id} value={c._id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-medium">Department</label>
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              className="w-full border p-2 rounded"
+              disabled={!selectedCollege}
+            >
+              <option value="">All Departments</option>
+              {filteredDepartments?.map((d) => (
+                <option key={d._id} value={d._id}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-medium">Program</label>
+            <select
+              value={selectedProgram}
+              onChange={(e) => setSelectedProgram(e.target.value)}
+              className="w-full border p-2 rounded"
+              disabled={!selectedDepartment}
+            >
+              <option value="">All Programs</option>
+              {filteredPrograms?.map((p) => (
+                <option key={p._id} value={p._id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-medium">Company Name</label>
+            {/* Reserve height so layout doesn't jump while react-select hydrates */}
+            <div className="h-[44px]">
+              <Select
+                isMulti
+                options={availableCompanies.map(c => ({ label: c, value: c }))}
+                value={selectedCompany.map(c => ({ label: c, value: c }))}
+                onChange={opts => setSelectedCompany(opts ? opts.map(o => o.value) : [])}
+                className="w-full"
+                classNamePrefix="cmp"
+                placeholder="Filter by one or more companies…"
+              />
+            </div>
+          </div>
+
+          <div>
+            <CTCRangeFilter selectedRange={selectedCTC} onChange={setSelectedCTC} />
+          </div>
+
+          <div>
+            <label className="block font-medium">Placement Status</label>
+            <select
+              value={placementStatusFilter}
+              onChange={(e) => setPlacementStatusFilter(e.target.value)}
+              className="w-full border p-2 rounded"
+            >
+              <option value="all">All</option>
+              <option value="placed">Placed</option>
+              <option value="unplaced">Unplaced</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label className="block font-medium">Department</label>
-          <select
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="w-full border p-2 rounded"
-            disabled={!selectedCollege}
-          >
-            <option value="">All Departments</option>
-            {filteredDepartments?.map((d) => (
-              <option key={d._id} value={d._id}>{d.name}</option>
-            ))}
-          </select>
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 items-stretch">
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded shadow text-center min-h-[110px]">
+            <p className="text-sm text-gray-600">Total Students</p>
+            {loading ? (
+              <div className="flex justify-center mt-2"><Skeleton className="h-6 w-10" /></div>
+            ) : (
+              <p className="text-lg font-bold text-blue-700 font-mono tabular-nums">{stats.totalStudents}</p>
+            )}
+          </div>
+          <div className="bg-green-50 border border-green-200 p-4 rounded shadow text-center min-h-[110px]">
+            <p className="text-sm text-gray-600">Total Placed Students</p>
+            {loading ? (
+              <div className="flex justify-center mt-2"><Skeleton className="h-6 w-10" /></div>
+            ) : (
+              <p className="text-lg font-bold text-green-700 font-mono tabular-nums">{stats.totalPlacedStudents}</p>
+            )}
+          </div>
+          <div className="bg-purple-50 border border-purple-200 p-4 rounded shadow text-center min-h-[110px]">
+            <p className="text-sm text-gray-600">Total Placements (incl. multiple offers)</p>
+            {loading ? (
+              <div className="flex justify-center mt-2"><Skeleton className="h-6 w-10" /></div>
+            ) : (
+              <p className="text-lg font-bold text-purple-700 font-mono tabular-nums">{stats.totalPlacements}</p>
+            )}
+          </div>
         </div>
 
-        <div>
-          <label className="block font-medium">Program</label>
-          <select
-            value={selectedProgram}
-            onChange={(e) => setSelectedProgram(e.target.value)}
-            className="w-full border p-2 rounded"
-            disabled={!selectedDepartment}
-          >
-            <option value="">All Programs</option>
-            {filteredPrograms?.map((p) => (
-              <option key={p._id} value={p._id}>{p.name}</option>
-            ))}
-          </select>
+        {/* Download */}
+        <div className="mt-4">
+          <button onClick={downloadExcel} className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition">
+            Download Excel
+          </button>
         </div>
-
-        <div>
-          <label className="block font-medium">Company Name</label>
-          <Select
-            isMulti
-            options={availableCompanies.map(c => ({ label: c, value: c }))}
-            value={selectedCompany.map(c => ({ label: c, value: c }))}
-            onChange={opts => setSelectedCompany(opts ? opts.map(o => o.value) : [])}
-            className="w-full"
-            placeholder="Filter by one or more companies…"
-          />
-        </div>
-
-        <div>
-          <CTCRangeFilter selectedRange={selectedCTC} onChange={setSelectedCTC} />
-        </div>
-
-        <div>
-          <label className="block font-medium">Placement Status</label>
-          <select
-            value={placementStatusFilter}
-            onChange={(e) => setPlacementStatusFilter(e.target.value)}
-            className="w-full border p-2 rounded"
-          >
-            <option value="all">All</option>
-            <option value="placed">Placed</option>
-            <option value="unplaced">Unplaced</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded shadow text-center">
-          <p className="text-sm text-gray-600">Total Students</p>
-          <p className="text-lg font-bold text-blue-700">{stats.totalStudents}</p>
-        </div>
-        <div className="bg-green-50 border border-green-200 p-4 rounded shadow text-center">
-          <p className="text-sm text-gray-600">Total Placed Students</p>
-          <p className="text-lg font-bold text-green-700">{stats.totalPlacedStudents}</p>
-        </div>
-        <div className="bg-purple-50 border border-purple-200 p-4 rounded shadow text-center">
-          <p className="text-sm text-gray-600">Total Placements (incl. multiple offers)</p>
-          <p className="text-lg font-bold text-purple-700">{stats.totalPlacements}</p>
-        </div>
-      </div>
-
-      {/* Download */}
-      <div className="mb-4">
-        <button onClick={downloadExcel} className="bg-green-500 text-white px-3 py-1 rounded">
-          Download Excel
-        </button>
       </div>
 
       {/* Table */}
@@ -342,21 +372,22 @@ const PlacementReports = () => {
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">Placement Data</h2>
-              <span className="text-sm text-gray-600">{filteredReports.length} students</span>
+              <span className="text-sm text-gray-600 font-mono tabular-nums">{filteredReports.length} students</span>
             </div>
           </div>
 
-          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          {/* Stable height + internal scroll + fixed layout */}
+         <div className="w-full min-w-0 overflow-x-auto overflow-y-auto max-h-[600px]">
+            <table className="min-w-full w-full table-fixed divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Placements</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Companies</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 w-12 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                  <th className="px-4 py-3 w-56 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                  <th className="px-4 py-3 w-56 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th className="px-4 py-3 w-64 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic</th>
+                  <th className="px-4 py-3 w-28 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Placements</th>
+                  <th className="px-4 py-3 w-[320px] text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Companies</th>
+                  <th className="px-4 py-3 w-32 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -374,33 +405,37 @@ const PlacementReports = () => {
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
                             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                               <User className="w-5 h-5 text-blue-600" />
                             </div>
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{report.name}</div>
-                            <div className="text-sm text-gray-500">{report.registered_number}</div>
+                          <div className="ml-4 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 break-words">
+                              {report.name}
+                            </div>
+                            <div className="text-sm text-gray-500 break-all">
+                              {report.registered_number}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          <div className="flex items-center mb-1">
-                            <Mail className="w-3 h-3 mr-1 text-gray-400" />
-                            {report.email}
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900 break-words">
+                          <div className="flex items-center mb-1 min-w-0">
+                            <Mail className="w-3 h-3 mr-1 text-gray-400 shrink-0" />
+                            <span className="truncate">{report.email}</span>
                           </div>
-                          <div className="flex items-center">
-                            <Phone className="w-3 h-3 mr-1 text-gray-400" />
-                            {report.phone}
+                          <div className="flex items-center min-w-0">
+                            <Phone className="w-3 h-3 mr-1 text-gray-400 shrink-0" />
+                            <span className="truncate">{report.phone}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900 break-words">
                           <div className="font-medium">{collegeMap[report.collegeId] || "N/A"}</div>
                           <div className="text-gray-500">{departmentMap[report.departmentId] || "N/A"}</div>
                           <div className="text-gray-500">{programMap[report.programId] || "N/A"}</div>
@@ -420,8 +455,8 @@ const PlacementReports = () => {
                           </button>
                         </div>
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900 whitespace-normal break-words max-w-[320px] leading-relaxed">
                           {(() => {
                             const companies = getCompaniesAndCTCs(report);
                             const displayCompanies = companies.slice(0, 2).join(", ");
@@ -444,6 +479,9 @@ const PlacementReports = () => {
                             );
                           })()}
                         </div>
+                        {/* If you prefer a tiny scroll in this cell:
+                        <div className="text-sm text-gray-900 whitespace-normal break-words max-w-[320px] max-h-16 overflow-y-auto pr-1 leading-relaxed">...</div>
+                        */}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -496,8 +534,8 @@ const PlacementReports = () => {
                     <User className="w-4 h-4 text-gray-600 mr-2" />
                     <span className="text-sm font-medium text-gray-600">Personal</span>
                   </div>
-                  <p className="font-semibold">{viewStudent.name}</p>
-                  <p className="text-sm text-gray-600">{viewStudent.registered_number}</p>
+                  <p className="font-semibold break-words">{viewStudent.name}</p>
+                  <p className="text-sm text-gray-600 break-all">{viewStudent.registered_number}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -505,8 +543,8 @@ const PlacementReports = () => {
                     <Mail className="w-4 h-4 text-gray-600 mr-2" />
                     <span className="text-sm font-medium text-gray-600">Contact</span>
                   </div>
-                  <p className="font-semibold">{viewStudent.email}</p>
-                  <p className="text-sm text-gray-600">{viewStudent.phone}</p>
+                  <p className="font-semibold break-all">{viewStudent.email}</p>
+                  <p className="text-sm text-gray-600 break-all">{viewStudent.phone}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -514,9 +552,9 @@ const PlacementReports = () => {
                     <Building className="w-4 h-4 text-gray-600 mr-2" />
                     <span className="text-sm font-medium text-gray-600">Academic</span>
                   </div>
-                  <p className="font-semibold">{collegeMap[viewStudent.collegeId] || "N/A"}</p>
-                  <p className="text-sm text-gray-600">{departmentMap[viewStudent.departmentId] || "N/A"}</p>
-                  <p className="text-sm text-gray-600">{programMap[viewStudent.programId] || "N/A"}</p>
+                  <p className="font-semibold break-words">{collegeMap[viewStudent.collegeId] || "N/A"}</p>
+                  <p className="text-sm text-gray-600 break-words">{departmentMap[viewStudent.departmentId] || "N/A"}</p>
+                  <p className="text-sm text-gray-600 break-words">{programMap[viewStudent.programId] || "N/A"}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -537,26 +575,26 @@ const PlacementReports = () => {
                 </h3>
                 {viewStudent.offCampusPlacements && viewStudent.offCampusPlacements.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                    <table className="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200 rounded-lg">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">CTC</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Offer Letter</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Feedback</th>
+                          <th className="px-4 py-3 w-1/4 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                          <th className="px-4 py-3 w-1/4 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">CTC</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">Offer Letter</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">Feedback</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {viewStudent.offCampusPlacements?.map((placement, idx) => (
                           <tr key={idx} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{placement?.companyName || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{placement?.role || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{placement?.type || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm font-medium text-green-600">{placement?.ctc || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{placement?.offerLetter || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{placement?.feedback || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900 break-words">{placement?.companyName || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600 break-words">{placement?.role || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600 break-words">{placement?.type || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm font-medium text-green-600 break-words">{placement?.ctc || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600 break-all">{placement?.offerLetter || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600 break-words">{placement?.feedback || "N/A"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -594,24 +632,24 @@ const PlacementReports = () => {
 
                 {viewStudent.onCampusPlacements && viewStudent.onCampusPlacements.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                    <table className="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200 rounded-lg">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">CTC</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied Date</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="px-4 py-3 w-1/4 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                          <th className="px-4 py-3 w-1/4 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">CTC</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">Applied Date</th>
+                          <th className="px-4 py-3 w-1/6 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {viewStudent.onCampusPlacements?.map((placement, idx) => (
                           <tr key={idx} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{placement?.company || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{placement?.title || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{placement?.type || "N/A"}</td>
-                            <td className="px-4 py-3 text-sm font-medium text-green-600">{placement?.ctc || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900 break-words">{placement?.company || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600 break-words">{placement?.title || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600 break-words">{placement?.type || "N/A"}</td>
+                            <td className="px-4 py-3 text-sm font-medium text-green-600 break-words">{placement?.ctc || "N/A"}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">
                               {placement?.appliedAt ? new Date(placement.appliedAt).toLocaleDateString() : "N/A"}
                             </td>
@@ -635,7 +673,7 @@ const PlacementReports = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <Building className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <Building className="W-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>No on-campus placements available</p>
                   </div>
                 )}
@@ -665,7 +703,7 @@ const PlacementReports = () => {
                 {getCompaniesAndCTCs(
                   filteredReports.find((r) => r._id === expandedStudentId)
                 )?.map((entry, idx) => (
-                  <li key={idx} className="text-sm text-gray-700">{entry}</li>
+                  <li key={idx} className="text-sm text-gray-700 break-words">{entry}</li>
                 ))}
               </ol>
             </div>

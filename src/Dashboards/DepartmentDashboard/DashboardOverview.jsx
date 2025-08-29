@@ -29,16 +29,19 @@ function DashboardOverview({
   departments, 
   students,
   programs,
-  faculty
+  faculty,
+  activeJobs
 }) {
   const [stats, setStats] = useState({
-    totalStudents: students?.length || 0,
-    totalFaculty: faculty?.length || 0,
-    totalPrograms: programs?.length || 0,
-    activeJobs:  0,
+    totalStudents: 0,
+    totalFaculty: 0,
+    totalPrograms: 0,
+    activeJobs: 0,
     placementRate: 0,
     averageGPA: 0
   });
+
+  console.log("students in dashboard overview", students);
 
   const [recentActivities, setRecentActivities] = useState([
     {
@@ -114,19 +117,17 @@ function DashboardOverview({
     }
   ]);
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
-    // Simulate API call
+    console.log("students in dashboard overview useEffect", faculty.length);
     setStats({
-      totalStudents: 245,
-      totalFaculty: 18,
-      totalPrograms: 6,
-      activeJobs: 12,
+      totalStudents: Array.isArray(students) ? students?.length : 0,
+      totalFaculty: Array.isArray(faculty) ? faculty.length : 0,
+      totalPrograms: Array.isArray(programs) ? programs.length : 0,
+      activeJobs: Array.isArray(activeJobs) ? activeJobs.length : 0,
       placementRate: 87.5,
       averageGPA: 8.2
     });
-  }, [departmentId]);
-  console.log("testing")
+  }, [students, faculty, programs, activeJobs]);
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, color, subtitle }) => (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 group">
@@ -302,147 +303,7 @@ function DashboardOverview({
         </div>
       </div>
 
-      {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Performance Metrics */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Performance Metrics</h3>
-            <BarChart3 className="w-6 h-6 text-gray-400" />
-          </div>
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Student Satisfaction</span>
-                <span className="text-sm font-bold text-gray-900">92%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full" style={{ width: '92%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Faculty Performance</span>
-                <span className="text-sm font-bold text-gray-900">88%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style={{ width: '88%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Research Output</span>
-                <span className="text-sm font-bold text-gray-900">76%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full" style={{ width: '76%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Industry Collaboration</span>
-                <span className="text-sm font-bold text-gray-900">84%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full" style={{ width: '84%' }}></div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Quick Actions</h3>
-            <Activity className="w-6 h-6 text-gray-400" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors group">
-              <GraduationCap className="w-8 h-8 text-blue-600 mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-sm font-medium text-gray-900">Add Student</p>
-            </button>
-            <button className="p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors group">
-              <Users className="w-8 h-8 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-sm font-medium text-gray-900">Add Faculty</p>
-            </button>
-            <button className="p-4 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors group">
-              <BookOpen className="w-8 h-8 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-sm font-medium text-gray-900">New Course</p>
-            </button>
-            <button className="p-4 bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors group">
-              <Briefcase className="w-8 h-8 text-orange-600 mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-sm font-medium text-gray-900">Post Job</p>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activities and Upcoming Events */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Activities */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Recent Activities</h3>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View All
-            </button>
-          </div>
-          <div className="space-y-2">
-            {recentActivities.map(activity => (
-              <ActivityItem key={activity.id} activity={activity} />
-            ))}
-          </div>
-        </div>
-
-        {/* Upcoming Events */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Upcoming Events</h3>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View Calendar
-            </button>
-          </div>
-          <div className="space-y-2">
-            {upcomingEvents.map(event => (
-              <EventItem key={event.id} event={event} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Alerts and Notifications */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-        <h3 className="text-xl font-bold text-gray-900 mb-6">Important Alerts</h3>
-        <div className="space-y-4">
-          <div className="flex items-start space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-yellow-800">Exam Schedule Update</h4>
-              <p className="text-sm text-yellow-700 mt-1">
-                Mid-term examination schedule has been updated. Please review the new timings.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-            <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-blue-800">New Faculty Orientation</h4>
-              <p className="text-sm text-blue-700 mt-1">
-                Orientation program for new faculty members scheduled for next week.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-green-800">Accreditation Approved</h4>
-              <p className="text-sm text-green-700 mt-1">
-                Department has successfully received accreditation for the next 5 years.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

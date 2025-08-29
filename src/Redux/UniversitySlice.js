@@ -174,6 +174,50 @@ export const updateUniversityProfilePhoto = createAsyncThunk(
   }
 );
 
+export const fetchCollegeProfile = createAsyncThunk(
+  "/college/profile/fetch",
+  async ({ token, universityName, collegeId }, thunkAPI) => {
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/college/colleges/${collegeId}/profile?universityName=${encodeURIComponent(
+          universityName
+        )}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // backend returns the profile subdoc directly
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.error || "Failed to fetch college profile"
+      );
+    }
+  }
+);
+
+// PATCH profile
+export const updateCollegeProfile = createAsyncThunk(
+  "/college/profile/update",
+  async ({ token, universityName, collegeId, profile }, thunkAPI) => {
+    try {
+      const res = await axios.patch(
+        `${BASE_URL}/college/colleges/${collegeId}/profile?universityName=${encodeURIComponent(
+          universityName
+        )}`,
+        profile, // { vision, mission, about, facilities, accreditations[], achievements[], partnerships[] }
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // controller returns { message, profile }
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.error || "Failed to update college profile"
+      );
+    }
+  }
+);
+
 const collegeslice=createSlice({
     name:'college',
     initialState:{
@@ -183,7 +227,15 @@ const collegeslice=createSlice({
       profileUrl: null,
       profileLoading: false,
       profileUpdating: false,
-      profileError: null,},
+      profileError: null,
+      collegeProfile: {
+        data: null, // the profile subdocument
+        loading: false,
+        saving: false,
+        error: null,
+        success: null,
+      },
+    },
     reducers:{},
     extraReducers:(builder)=>{
         builder.addCase(fetchColleges.fulfilled,(state,action)=>{
@@ -266,6 +318,40 @@ const collegeslice=createSlice({
       .addCase(updateUniversityProfilePhoto.rejected, (state, action) => {
         state.profileUpdating = false;
         state.profileError = action.payload || 'Failed to update profile photo';
+      })
+
+       .addCase(fetchCollegeProfile.pending, (state) => {
+        state.collegeProfile.loading = true;
+        state.collegeProfile.error = null;
+        state.collegeProfile.success = null;
+      })
+      .addCase(fetchCollegeProfile.fulfilled, (state, action) => {
+        state.collegeProfile.data = action.payload || null;
+        state.collegeProfile.loading = false;
+      })
+      .addCase(fetchCollegeProfile.rejected, (state, action) => {
+        state.collegeProfile.loading = false;
+        state.collegeProfile.error =
+          action.payload || "Failed to fetch profile";
+      })
+
+      .addCase(updateCollegeProfile.pending, (state) => {
+        state.collegeProfile.saving = true;
+        state.collegeProfile.error = null;
+        state.collegeProfile.success = null;
+      })
+      .addCase(updateCollegeProfile.fulfilled, (state, action) => {
+        // action.payload = { message, profile }
+        state.collegeProfile.data =
+          action.payload?.profile || state.collegeProfile.data;
+        state.collegeProfile.saving = false;
+        state.collegeProfile.success =
+          action.payload?.message || "Profile updated successfully";
+      })
+      .addCase(updateCollegeProfile.rejected, (state, action) => {
+        state.collegeProfile.saving = false;
+        state.collegeProfile.error =
+          action.payload || "Failed to update profile";
       });
         
     }

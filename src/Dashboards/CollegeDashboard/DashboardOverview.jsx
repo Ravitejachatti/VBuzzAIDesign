@@ -47,6 +47,7 @@ function DashboardOverview({
 }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedPeriod, setSelectedPeriod] = useState('month');
+  console.log("departments program length", departments.programs?.length);
 
 
   const LiveClock = React.memo(function LiveClock() {
@@ -388,8 +389,8 @@ function DashboardOverview({
       </div>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Placement Analytics */}
+      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
         <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -425,7 +426,7 @@ function DashboardOverview({
             </div>
           </div>
           
-          {/* Mock Chart Area */}
+         
           <div className="h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl flex items-center justify-center border border-blue-100">
             <div className="text-center">
               <BarChart className="w-16 h-16 text-blue-400 mx-auto mb-4" />
@@ -435,7 +436,7 @@ function DashboardOverview({
           </div>
         </div>
 
-        {/* Quick Actions */}
+      
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
           <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
           <div className="space-y-4">
@@ -446,9 +447,9 @@ function DashboardOverview({
         </div>
       </div>
 
-      {/* Recent Activities & Upcoming Events */}
+     
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activities */}
+       
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">Recent Activities</h3>
@@ -465,7 +466,7 @@ function DashboardOverview({
           </div>
         </div>
 
-        {/* Upcoming Events */}
+       
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">Upcoming Events</h3>
@@ -481,7 +482,7 @@ function DashboardOverview({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Department Overview */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
@@ -517,7 +518,7 @@ function DashboardOverview({
       </div>
 
       {/* System Status */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -595,7 +596,7 @@ function DashboardOverview({
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

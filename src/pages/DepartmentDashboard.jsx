@@ -29,12 +29,14 @@ import PlacementReports from "../Dashboards/DepartmentDashboard/placement/Report
 import DepartProgram from '../Dashboards/DepartmentDashboard/Programs/DepartProgram';
 import DepartFaculty from '../Dashboards/DepartmentDashboard/Faculty/DepartFaculty';
 import DepartNotice from '../Dashboards/DepartmentDashboard/Notice/DepartNotice';
+import DepartJob from '../Dashboards/DepartmentDashboard/job/CollegeJob'
 
 import { fetchColleges } from '../Redux/UniversitySlice';
 import { fetchDept } from '../Redux/DepartmentSlice';
 import { fetchProgram } from '../Redux/programs';
 import { fetchStudents } from '../Redux/Placement/StudentsSlice';
 import { getAllFaculty } from '../Redux/College/faculty';
+import { fetchJobs } from '../Redux/Jobslice';
 import { fetchUniversityProfilePhoto } from '../Redux/UniversitySlice';
 import LoadingSpinner from '../components/Resuable/LoadingSpinner';
 import DashboardOverview from '../Dashboards/DepartmentDashboard/DashboardOverview';
@@ -59,6 +61,11 @@ function DepartmentDashboard() {
   const [departments, setDepartments] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [faculty, setFaculty] = useState([])
+  const studentsData = useSelector((state) => state.students.students) || [];
+    const jobsData = useSelector((state) => state.jobs.jobs || 0 )
+    const openJobs = useSelector((state) => 
+    (state.jobs.jobs || []).filter(job => job.status === 'Open')
+  );
   const photoUrl = useSelector((state) => state.colleges.profileUrl);
   
 
@@ -144,6 +151,27 @@ function DepartmentDashboard() {
   
     }
 
+
+      const fetchjobs = async () => {
+        if(!token) {
+          setError("Authentication token is missing")
+          return
+        }
+        setLoad(true)
+        try{
+          const result = await dispatch( fetchJobs({ token, universityName, BASE_URL}));
+          if(result.meta.requestStatus === "fulfilled"){
+            setError("")
+            setSuccess("JObs fetched successfully")
+            setJobs(result.payload)
+          }else{
+            setError("Something went wrong.")
+          }      
+        }catch(err) {
+          setError("Failed to fetch jobs")
+        }
+      }
+
       const fetchProfilePhoto = async () => {
         if (!token) {
           setError("Authentication token is missing.");
@@ -176,6 +204,7 @@ function DepartmentDashboard() {
         fetchPrograms(),
         handleFetchStudents(),
         fetchFaculty(),
+        fetchjobs(),
         fetchProfilePhoto()
       ]);
       setIsFetchingAll(false);
@@ -190,15 +219,17 @@ function DepartmentDashboard() {
       category: "Department",
       items: [
         { id: 'Overview', label: "DashboardOverview", icon:BuildingIcon, description: "Department Overveiw"},
-        { id: 'ViewStudents', label: 'Students', icon: Users, description: 'Student records & details', count: students.length },
-        { id: 'PlacementReports', label: 'Placements', icon: BarChart3, description: 'Placement analytics' },
+        { id: 'ViewStudents', label: 'Students', icon: Users, description: 'Student records & details', count: studentsData.length },
+        { id: 'DepartProgram', label: 'Programs', icon: BookOpen, description: 'Academic programs', count: programs.length },
+        { id: 'DepartFaculty', label: 'Faculty', icon: GraduationCap, description: 'Department faculty', count: faculty.length },
+
       ]
     },
     {
-      category: "Academics",
+      category: "Placements & Jobs",
       items: [
-        { id: 'DepartProgram', label: 'Programs', icon: BookOpen, description: 'Academic programs', count: programs.length },
-        { id: 'DepartFaculty', label: 'Faculty', icon: GraduationCap, description: 'Department faculty' },
+        { id: 'PlacementReports', label: 'Placements', icon: BarChart3, description: 'Placement analytics' },
+        { id: 'DepartJob', label: 'Jobs', icon: Briefcase, description: 'Active job listings',  badge: openJobs.length > 0 ? openJobs.length : null },
       ]
     },
     {
@@ -215,6 +246,7 @@ function DepartmentDashboard() {
       ]
     }
   ];
+  console.log('students', students);  
 
   const components = {
     Overview: (
@@ -227,9 +259,10 @@ function DepartmentDashboard() {
       universityName={user?.universityName}
       colleges={colleges}
       departments={departments}
-      students={students}
+      students={studentsData}
       programs={programs}
       faculty={faculty}
+      activeJobs={openJobs}
          
      />
     ),
@@ -242,6 +275,9 @@ function DepartmentDashboard() {
         departments={departments}
         programs={programs}
       />
+    ),
+    DepartJob:(
+      <DepartJob/>
     ),
     PlacementReports: (
       <PlacementReports
@@ -450,7 +486,8 @@ function DepartmentDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-0 min-w-0">
+
         {/* Top Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
           <div className="flex items-center justify-between px-6 py-4">
@@ -520,7 +557,7 @@ function DepartmentDashboard() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20 overflow-auto">
+       <main className="flex-1 min-w-0 p-6 bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20 overflow-auto">
           <div className="max-w-full">
             {components[activeComponent]}
           </div>
