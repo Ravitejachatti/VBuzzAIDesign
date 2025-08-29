@@ -730,7 +730,7 @@ useEffect(() => {
                     />
                   ) : (
                     <span className="text-lg font-semibold">    
-                      <Building2 className="w-6 h-6 text-white" />
+                      <Building className="w-6 h-6 text-white" />
                     </span>
                   )}
               </div>
