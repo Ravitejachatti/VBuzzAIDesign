@@ -286,17 +286,17 @@ const isNoticeExpired = (expiryDate) => {
                         <div className="flex items-center text-sm text-gray-600">
                           <Building className="w-4 h-4 mr-2 text-indigo-600" />
                           <span className="font-medium">Colleges:</span>
-                          <span className="ml-1">{notice?.colleges.map(getCollegeName).join(", ")}</span>
+                          <span className="ml-1">{notice?.colleges?.map(getCollegeName).join(", ")}</span>
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <GraduationCap className="w-4 h-4 mr-2 text-indigo-600" />
                           <span className="font-medium">Departments:</span>
-                          <span className="ml-1">{notice?.departments.map(getDepartmentName).join(", ")}</span>
+                          <span className="ml-1">{notice?.departments?.map(getDepartmentName).join(", ")}</span>
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <FileText className="w-4 h-4 mr-2 text-indigo-600" />
                           <span className="font-medium">Programs:</span>
-                          <span className="ml-1">{notice?.programs.map(getProgramName).join(", ")}</span>
+                          <span className="ml-1">{notice?.programs?.map(getProgramName).join(", ")}</span>
                         </div>
                       </div>
 

@@ -22,10 +22,12 @@ import {
   FaSearch,
   
 } from "react-icons/fa";
-import { Building2, Shield } from "lucide-react";
+import { Building2, Shield, Briefcase, Bell } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 // Import components
+import CollegeJob from '../Dashboards/UniversityDashboards/job/CollegeJob';
+import Notice from '../Dashboards/UniversityDashboards/Notice/UniverstityNotice'
 import UniversityInfo from "../Dashboards/UniversityDashboards//UniversityDashboards/UniversityInformation";
 import AdmissionReports from "../Dashboards/UniversityDashboards/UniversityDashboards/AdmissionReports";
 // import PlacementReports from "../Dashboards/UniversityDashboards/PlacementReport/PlacementReport";
@@ -43,7 +45,7 @@ import Placements from "../Dashboards/UniversityDashboards/UniversityDashboards/
 import Programs from "../Dashboards/UniversityDashboards/UniversityDashboards/Programs/Program";
 // import Admission from "../Dashboards/AdmissionDepartment/ components/ApplicationsTable";
  import Admission from "../Dashboards/UniversityDashboards/AdmissionDepartment/ components/ApplicationsTable";
-
+ import { fetchJobs } from '../Redux/Jobslice';
  import { fetchColleges, fetchUniversityProfilePhoto } from "../Redux/UniversitySlice";
 
 
@@ -66,6 +68,10 @@ function UniversityDashboard() {
   const [error, setError] = useState("");
 
   const photoUrl = useSelector((state) => state.colleges.profileUrl);
+    const jobsData = useSelector((state) => state.jobs.jobs || 0 )
+    const openJobs = useSelector((state) => 
+    (state.jobs.jobs || []).filter(job => job.status === 'Open')
+  );
 
   // User data from login
   const { user, message } = location.state || {};
@@ -101,6 +107,12 @@ function UniversityDashboard() {
       description: "Academic programs",
       category: "academic"
     },
+     { id: 'CollegeNotice', 
+      label: 'Notices', 
+      icon: Bell,
+       description: 'Announcements and notices', 
+       badge: 'New'
+      ,category: "academic" },
     {
       id: "Placements",
       label: "Placement Cells",
@@ -108,6 +120,12 @@ function UniversityDashboard() {
       description: "Placement management",
       category: "placement"
     },
+    { id: 'CollegeJob', 
+      label: 'Job Management', 
+      icon: Briefcase,
+       description: 'Manage job postings', 
+       count: openJobs.length,
+      category: "placement" },
     {
       id: "PlacementReports",
       label: "Placement Reports",
@@ -154,7 +172,8 @@ function UniversityDashboard() {
           fetchColleges(),
           fetchDepartments(),
           fetchPrograms(),
-          fetchProfilePhoto()
+          fetchProfilePhoto(),
+          fetchjobs(),
         ]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -228,6 +247,28 @@ function UniversityDashboard() {
           }
           setLoad(false);
         };
+
+
+        const fetchjobs = async () => {
+          if(!token) {
+            setError("Authentication token is missing")
+            return
+          }
+          setLoad(true)
+          try{
+            const result = await dispatch( fetchJobs({ token, universityName, BASE_URL}));
+            if(result.meta.requestStatus === "fulfilled"){
+              setError("")
+              setSuccess("JObs fetched successfully")
+              setJobs(result.payload)
+            }else{
+              setError("Something went wrong.")
+            }      
+          }catch(err) {
+            setError("Failed to fetch jobs")
+          }
+        }
+      
   
 
   // Handle logout
@@ -253,7 +294,9 @@ function UniversityDashboard() {
     Colleges: <Colleges user={user} colleges={colleges} departments={departments} programs={programs} />,
     Departments: <Departments colleges={colleges} user={user} programs={programs} />,
     Programs: <Programs colleges={colleges} departments={departments} programs={programs} />,
+    CollegeNotice: (<Notice />),
     Placements: <Placements user={user} universityName={universityName} colleges={colleges} departments={departments} programs={programs} />,
+    CollegeJob: (<CollegeJob />),
     PlacementReports: <PlacementReports colleges={colleges} departments={departments} programs={programs} />,
     Admission: <Admission user={user} universityName={universityName} />,
     AdmissionReports: <AdmissionReports user={user} />,
@@ -276,6 +319,7 @@ function UniversityDashboard() {
     placement: "Placement Management", 
     admin: "Administration"
   };
+
 
   if (loading) {
     return (

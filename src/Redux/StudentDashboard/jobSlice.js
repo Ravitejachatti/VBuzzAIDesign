@@ -59,10 +59,12 @@ export const fetchAppliedJobs = createAsyncThunk(
  * 3. Thunk: fetch shortlisted Rounds for a particular jobId
  * This is not used in the current code but can be useful for future features.
  */
+
 export const fetchShortlistedRounds = createAsyncThunk(
   "job/fetchShortlistedRounds",
-  async ({ jobId, universityName, token }, { rejectWithValue }) => {
+  async ({ jobId, universityName }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("Student token");
       const response = await axios.get(
         `${BASE_URL}/student/jobs/getAllRounds`,
         {
@@ -78,6 +80,7 @@ export const fetchShortlistedRounds = createAsyncThunk(
     }
   }
 );
+
 
 /**
  * 4. Thunk: fetch all selected jobs for a particular student
