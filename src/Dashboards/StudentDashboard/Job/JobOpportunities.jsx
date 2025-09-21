@@ -32,6 +32,7 @@ const JobOpportunities = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [companyFilter, setCompanyFilter] = useState("");
+  const [redirectUrl, setRedirectUrl] = useState(null);
 
   useEffect(() => {
     if (universityName) {
@@ -44,7 +45,7 @@ const JobOpportunities = () => {
       alert(applyError);
       dispatch(clearApplyStatus());
     } else if (applySuccessMessage) {
-      alert(applySuccessMessage);
+      // alert(applySuccessMessage);
       dispatch(clearApplyStatus());
     }
   }, [applyError, applySuccessMessage, dispatch]);
@@ -59,20 +60,23 @@ const JobOpportunities = () => {
 
 
   const handleApply = async (job) => {
-    if (job.status === "Closed" || applyingJobIds.includes(job._id)) return;
+  if (job.status === "Closed" || applyingJobIds.includes(job._id)) return;
 
-    try {
-      const result = await dispatch(applyToJob({ jobId: job._id, universityName }));
+  try {
+    const result = await dispatch(applyToJob({ jobId: job._id, universityName }));
 
-      if (applyToJob.fulfilled.match(result)) {
-        if (job.linkToApply) {
-          window.open(job.linkToApply, "_blank");
-        }
+    if (applyToJob.fulfilled.match(result)) {
+      if (job.linkToApply) {
+        setRedirectUrl(job.linkToApply); // open modal
+      } else {
+        alert("Your application has been recorded successfully.");
       }
-    } catch (err) {
-      console.error("Error applying to job:", err);
     }
-  };
+  } catch (err) {
+    console.error("Error applying to job:", err);
+  }
+};
+
 
 
   const uniqueCompanies = [...new Set(eligibleJobs.map(job => job.company))];
@@ -351,6 +355,35 @@ const JobOpportunities = () => {
           </Dialog.Panel>
         </div>
       </Dialog>
+
+      <Dialog open={!!redirectUrl} onClose={() => setRedirectUrl(null)} className="relative z-50">
+  <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+  <div className="fixed inset-0 flex items-center justify-center p-4">
+    <Dialog.Panel className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <Dialog.Title className="text-lg font-bold mb-2">Application Submitted</Dialog.Title>
+      <p className="text-gray-700 mb-4">
+        Your application has been recorded. Please complete the required details on the company’s site.
+      </p>
+      <div className="flex justify-end space-x-3">
+        <button
+          onClick={() => setRedirectUrl(null)}
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => {
+            window.open(redirectUrl, "_blank");
+            setRedirectUrl(null);
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Go to Company Site
+        </button>
+      </div>
+    </Dialog.Panel>
+  </div>
+</Dialog>
     </div>
   );
 };
