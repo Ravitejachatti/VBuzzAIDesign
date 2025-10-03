@@ -24,7 +24,7 @@ const UserLayout = () => {
 
       <Navbar />
 
-      <main>
+      <main className='mt-[40px]'>
         <Outlet />
       </main>
       <Footer />

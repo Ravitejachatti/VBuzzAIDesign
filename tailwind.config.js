@@ -19,6 +19,17 @@ export default {
       fontSize: {
         '2xs': '0.625rem', // 10px
       },
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
+      },
+      boxShadow: {
+        'custom-nav': '0 0 20px rgba(0, 0, 0, 0.10)',
+        'custom-field': '0 0 10px rgba(0, 0, 0, 0.10)',
+      },
+      colors: {
+        primary: "#1E5D9A",
+        secondary: "#EA5C0C",
+      },
     },
   },
   plugins: [],
