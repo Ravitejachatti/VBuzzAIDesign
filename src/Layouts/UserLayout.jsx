@@ -1,6 +1,3 @@
-import React, { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import MainLayout from './layout/MainLayout';
 import Header from './layout/Header';
 import Navbar from './layout/Navbar';
@@ -20,7 +17,7 @@ const UserLayout = () => {
   return (
     <>
 
-      <Header />
+      {/* <Header /> */}
 
       <Navbar />
 

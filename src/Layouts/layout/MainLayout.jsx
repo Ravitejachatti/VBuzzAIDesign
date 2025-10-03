@@ -11,7 +11,7 @@ const MainLayout = () => {
       {/* Your layout components, like Header and Sidebar, go here */}
       
       {/* headher here */}
-    <Header/>
+    {/* <Header/> */}
 
       <Navbar/>
 

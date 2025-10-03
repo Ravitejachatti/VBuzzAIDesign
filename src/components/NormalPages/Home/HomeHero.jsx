@@ -1,5 +1,4 @@
 // VBuzzHomepage.jsx
-import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 // Removed incorrect imports
 // import { Icon } from 'lucide-react'; // Incorrect import
@@ -12,8 +11,6 @@ import University3 from '../../../assets/University3.png'
 import Button from "../../Resuable/Button";
 
 const VBuzzHomepage = () => {
-  const [activeSection, setActiveSection] = useState("home");
-  const duration = 2500;
 
   return (
     <section className="bg-primary flex flex-col lg:flex-row px-[50px] md:px-[150px] mt-[-50px] justify-between items-center">

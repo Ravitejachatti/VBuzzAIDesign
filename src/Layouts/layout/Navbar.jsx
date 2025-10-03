@@ -421,6 +421,15 @@ const Header = () => {
         { name: "Corporate Login", path: "/login/corporate" }
       ]
     },
+    {
+      name: "Explore Paths",
+      submenu: [
+        { name: "FInd Jobs", path: "/find-job" },
+        { name: "Universities", path: "/page/universities" },
+        { name: "Companies", path: "/page/companies" },
+        { name: "Institute Onboarding", path: "/university-onboarding" },
+      ]
+    }
   ];
 
   useEffect(() => {
