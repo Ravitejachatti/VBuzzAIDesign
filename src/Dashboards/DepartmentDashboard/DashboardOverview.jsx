@@ -27,7 +27,14 @@ function DashboardOverview({
   universityName, 
   colleges, 
   departments, 
+<<<<<<< HEAD
   programs 
+=======
+  students,
+  programs,
+  faculty,
+  activeJobs
+>>>>>>> vbuzzUpdatedFrontend/main
 }) {
   const [stats, setStats] = useState({
     totalStudents: students?.length || 0,
@@ -38,6 +45,11 @@ function DashboardOverview({
     averageGPA: 0
   });
 
+<<<<<<< HEAD
+=======
+  console.log("students in dashboard overview", students);
+
+>>>>>>> vbuzzUpdatedFrontend/main
   const [recentActivities, setRecentActivities] = useState([
     {
       id: 1,
@@ -112,6 +124,7 @@ function DashboardOverview({
     }
   ]);
 
+<<<<<<< HEAD
   // Mock data - replace with actual API calls
   useEffect(() => {
     // Simulate API call
@@ -124,6 +137,19 @@ function DashboardOverview({
       averageGPA: 8.2
     });
   }, [departmentId]);
+=======
+  useEffect(() => {
+    console.log("students in dashboard overview useEffect", faculty.length);
+    setStats({
+      totalStudents: Array.isArray(students) ? students?.length : 0,
+      totalFaculty: Array.isArray(faculty) ? faculty.length : 0,
+      totalPrograms: Array.isArray(programs) ? programs.length : 0,
+      activeJobs: Array.isArray(activeJobs) ? activeJobs.length : 0,
+      placementRate: 87.5,
+      averageGPA: 8.2
+    });
+  }, [students, faculty, programs, activeJobs]);
+>>>>>>> vbuzzUpdatedFrontend/main
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, color, subtitle }) => (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 group">
@@ -299,6 +325,7 @@ function DashboardOverview({
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Charts and Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Performance Metrics */}
@@ -440,6 +467,9 @@ function DashboardOverview({
           </div>
         </div>
       </div>
+=======
+
+>>>>>>> vbuzzUpdatedFrontend/main
     </div>
   );
 }

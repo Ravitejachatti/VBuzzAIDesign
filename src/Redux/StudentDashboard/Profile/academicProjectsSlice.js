@@ -18,6 +18,10 @@ export const fetchAcademicProjects = createAsyncThunk(
       );
       // response.data.student is the full student object; we only want academicProjects
       return response.data.student.academicProjects || [];
+<<<<<<< HEAD
+=======
+      
+>>>>>>> vbuzzUpdatedFrontend/main
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
     }

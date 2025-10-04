@@ -1,4 +1,22 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+import axios from "axios";
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
+import { useParams } from "react-router-dom";
+import { fetchDept } from "../../../Redux/DepartmentSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addProgram } from "../../../Redux/programs";
+import { FaPlus, FaGraduationCap, FaBook, FaClock, FaClipboardList, FaLink } from "react-icons/fa";
+
+const AddProgram = () => {
+  const { universityName } = useParams();
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+<<<<<<< HEAD
+const dispatch = useDispatch()
+  const {departments,loading} = useSelector(state=>state.department)
+=======
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { fetchDept } from "../../../Redux/DepartmentSlice";
@@ -12,6 +30,12 @@ const AddProgram = () => {
   const dispatch = useDispatch();
   const { departments, loading } = useSelector(state => state.department);
   
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+  const dispatch = useDispatch();
+  const { departments, loading } = useSelector(state => state.department);
+  
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const [programData, setProgramData] = useState({
     name: "",
     type: "",
@@ -23,16 +47,36 @@ const AddProgram = () => {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+  const token = localStorage.getItem("University authToken");
+  console.log("Token in AddProgram:", token);
+=======
   const [load, setLoad] = useState(false);
 
   const token = localStorage.getItem("University authToken");
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+  const [load, setLoad] = useState(false);
+
+  const token = localStorage.getItem("University authToken");
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
   const fetchDepartments = async () => {
     if (!token) {
       setError("Authentication token is missing.");
       return;
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
+       dispatch(fetchDept({token,universityName}))
+=======
     dispatch(fetchDept({ token, universityName }));
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+    dispatch(fetchDept({ token, universityName }));
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   };
 
   useEffect(() => {
@@ -43,6 +87,72 @@ const AddProgram = () => {
     setProgramData({ ...programData, [e.target.name]: e.target.value });
   };
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(null);
+  setSuccess(null);
+=======
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setLoad(true);
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
+
+    const finalProgramData = { ...programData };
+    if (programData.type === "other") {
+      finalProgramData.type = programData.otherType;
+      delete finalProgramData.otherType;
+    }
+
+    if (typeof finalProgramData.name !== "string" || !finalProgramData.name.trim()) {
+      setError("Program name must be a valid string.");
+      setLoad(false);
+      return;
+    }
+
+    const result = await dispatch(addProgram({ token, universityName, finalProgramData }));
+    
+    if (result.meta.requestStatus === "fulfilled") {
+      setSuccess("Program added successfully!");
+      setError("");
+      setProgramData({
+        name: "",
+        type: "",
+        duration: "",
+        department: "",
+        syllabus: "",
+        eligibilityCriteria: "",
+        level: "",
+      });
+    } else {
+      setError("Something went wrong.");
+      setSuccess("");
+    }
+    setLoad(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <FaGraduationCap className="text-blue-600 text-xl" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Add New Program</h1>
+              <p className="text-gray-600">Create a new academic program under {universityName}</p>
+            </div>
+          </div>
+        </div>
+<<<<<<< HEAD
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add Program</button>
+      </form>
+=======
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -97,6 +207,8 @@ const AddProgram = () => {
             </div>
           </div>
         </div>
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
         {/* Alert Messages */}
         {error && (
@@ -314,8 +426,20 @@ const AddProgram = () => {
           </form>
         </div>
       </div>
+<<<<<<< HEAD
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
     </div>
   );
 };
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+export default DepartAddProgram;
+=======
 export default AddProgram;
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+export default AddProgram;
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04

@@ -7,9 +7,14 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // Thunk to fetch rounds for a particular job
 export const fetchRounds = createAsyncThunk(
   "round/fetchRounds",
+<<<<<<< HEAD
   async ({ jobId, universityName }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("Student token");
+=======
+  async ({ jobId, universityName, token }, { rejectWithValue }) => {
+    try {
+>>>>>>> vbuzzUpdatedFrontend/main
       const response = await axios.get(
         `${BASE_URL}/student/rounds/getRoundStatus/${jobId}`, 
         {
@@ -18,7 +23,10 @@ export const fetchRounds = createAsyncThunk(
         }
       );
       return response.data; // Rounds data
+<<<<<<< HEAD
       console.log("Fetched rounds:", response.data);
+=======
+>>>>>>> vbuzzUpdatedFrontend/main
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || err.message

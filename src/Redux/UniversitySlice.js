@@ -134,9 +134,114 @@ export const deleteCollege = createAsyncThunk('/delete',async ({token,collegeId,
     } 
 })
 
+<<<<<<< HEAD
 const collegeslice=createSlice({
     name:'college',
     initialState:{colleges:[],loading:true, selectedCollege: null,},
+=======
+export const fetchUniversityProfilePhoto = createAsyncThunk(
+  '/university/profilePhoto/get',
+  async ({ token, universityName }, thunkAPI) => {
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/university/profile-photo?universityName=${encodeURIComponent(universityName)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // API returns: { url: "..." }
+      console.log("Profile photo fetched:", res.data);
+      return res.data?.url || null;
+    } catch (err) {
+      console.error(err);
+      return thunkAPI.rejectWithValue(err.response?.data?.error || 'Failed to fetch profile photo');
+    }
+  }
+);
+
+export const updateUniversityProfilePhoto = createAsyncThunk(
+  '/university/profilePhoto/update',
+  async ({ token, universityName, url }, thunkAPI) => {
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    try {
+      const res = await axios.patch(
+        `${BASE_URL}/university/profile-photo?universityName=${encodeURIComponent(universityName)}`,
+        { url },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // API returns: { message: "...", url: "..." }
+      alert('Profile photo updated');
+      return res.data?.url || url || null;
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to update profile photo');
+      console.error(err);
+      return thunkAPI.rejectWithValue(err.response?.data?.error || 'Failed to update profile photo');
+    }
+  }
+);
+
+export const fetchCollegeProfile = createAsyncThunk(
+  "/college/profile/fetch",
+  async ({ token, universityName, collegeId }, thunkAPI) => {
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/college/colleges/${collegeId}/profile?universityName=${encodeURIComponent(
+          universityName
+        )}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // backend returns the profile subdoc directly
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.error || "Failed to fetch college profile"
+      );
+    }
+  }
+);
+
+// PATCH profile
+export const updateCollegeProfile = createAsyncThunk(
+  "/college/profile/update",
+  async ({ token, universityName, collegeId, profile }, thunkAPI) => {
+    try {
+      const res = await axios.patch(
+        `${BASE_URL}/college/colleges/${collegeId}/profile?universityName=${encodeURIComponent(
+          universityName
+        )}`,
+        profile, // { vision, mission, about, facilities, accreditations[], achievements[], partnerships[] }
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // controller returns { message, profile }
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.error || "Failed to update college profile"
+      );
+    }
+  }
+);
+
+const collegeslice=createSlice({
+    name:'college',
+    initialState:{
+      colleges:[],
+      loading:true, 
+      selectedCollege: null,
+      profileUrl: null,
+      profileLoading: false,
+      profileUpdating: false,
+      profileError: null,
+      collegeProfile: {
+        data: null, // the profile subdocument
+        loading: false,
+        saving: false,
+        error: null,
+        success: null,
+      },
+    },
+>>>>>>> vbuzzUpdatedFrontend/main
     reducers:{},
     extraReducers:(builder)=>{
         builder.addCase(fetchColleges.fulfilled,(state,action)=>{
@@ -155,6 +260,7 @@ const collegeslice=createSlice({
         })
 
         .addCase(fetchCollegeById.fulfilled, (state, action) => {
+<<<<<<< HEAD
   state.selectedCollege = action.payload; // optional if you want to store in state
   state.loading = false;
 })
@@ -164,6 +270,17 @@ const collegeslice=createSlice({
 .addCase(fetchCollegeById.rejected, (state) => {
   state.loading = false;
 })
+=======
+        state.selectedCollege = action.payload; // optional if you want to store in state
+        state.loading = false;
+      })
+      .addCase(fetchCollegeById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchCollegeById.rejected, (state) => {
+        state.loading = false;
+      })
+>>>>>>> vbuzzUpdatedFrontend/main
 
         .addCase(addCollege.fulfilled,(state,action)=>{
           if(action.payload){state.colleges.push(action.payload)}
@@ -193,6 +310,70 @@ const collegeslice=createSlice({
                                               }
                    }
         })
+<<<<<<< HEAD
+=======
+
+              // ----- NEW: profile photo get/update -----
+      .addCase(fetchUniversityProfilePhoto.pending, (state) => {
+        state.profileLoading = true;
+        state.profileError = null;
+      })
+      .addCase(fetchUniversityProfilePhoto.fulfilled, (state, action) => {
+        state.profileUrl = action.payload; // string | null
+        state.profileLoading = false;
+      })
+      .addCase(fetchUniversityProfilePhoto.rejected, (state, action) => {
+        state.profileLoading = false;
+        state.profileError = action.payload || 'Failed to load profile photo';
+      })
+
+      .addCase(updateUniversityProfilePhoto.pending, (state) => {
+        state.profileUpdating = true;
+        state.profileError = null;
+      })
+      .addCase(updateUniversityProfilePhoto.fulfilled, (state, action) => {
+        state.profileUrl = action.payload; // updated url
+        state.profileUpdating = false;
+      })
+      .addCase(updateUniversityProfilePhoto.rejected, (state, action) => {
+        state.profileUpdating = false;
+        state.profileError = action.payload || 'Failed to update profile photo';
+      })
+
+       .addCase(fetchCollegeProfile.pending, (state) => {
+        state.collegeProfile.loading = true;
+        state.collegeProfile.error = null;
+        state.collegeProfile.success = null;
+      })
+      .addCase(fetchCollegeProfile.fulfilled, (state, action) => {
+        state.collegeProfile.data = action.payload || null;
+        state.collegeProfile.loading = false;
+      })
+      .addCase(fetchCollegeProfile.rejected, (state, action) => {
+        state.collegeProfile.loading = false;
+        state.collegeProfile.error =
+          action.payload || "Failed to fetch profile";
+      })
+
+      .addCase(updateCollegeProfile.pending, (state) => {
+        state.collegeProfile.saving = true;
+        state.collegeProfile.error = null;
+        state.collegeProfile.success = null;
+      })
+      .addCase(updateCollegeProfile.fulfilled, (state, action) => {
+        // action.payload = { message, profile }
+        state.collegeProfile.data =
+          action.payload?.profile || state.collegeProfile.data;
+        state.collegeProfile.saving = false;
+        state.collegeProfile.success =
+          action.payload?.message || "Profile updated successfully";
+      })
+      .addCase(updateCollegeProfile.rejected, (state, action) => {
+        state.collegeProfile.saving = false;
+        state.collegeProfile.error =
+          action.payload || "Failed to update profile";
+      });
+>>>>>>> vbuzzUpdatedFrontend/main
         
     }
 

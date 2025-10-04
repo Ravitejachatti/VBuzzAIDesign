@@ -31,6 +31,10 @@ import { uploadPlacementReducer } from "./Placement/uploadPlacementSlice.js";
 import { createNoticeReducer } from "./Placement/noticeSlice.js";
 import { documentVerificationReducer } from "./StudentDashboard/Profile/documentVerificationSlice.js";
 
+<<<<<<< HEAD
+=======
+import { selectAddSelectedApplicantsReducer } from "./Placement/addSelectedApplicants.js"
+>>>>>>> vbuzzUpdatedFrontend/main
 
 // This is the store for the college ddashboard
 import { facultyReducer } from "./College/faculty.jsx";
@@ -72,6 +76,12 @@ const store=configureStore({
            
            faculty: facultyReducer, // This is the faculty slice for the college dashboard
 
+<<<<<<< HEAD
+=======
+         selectedApplicants:selectAddSelectedApplicantsReducer
+
+
+>>>>>>> vbuzzUpdatedFrontend/main
         }
 })
 

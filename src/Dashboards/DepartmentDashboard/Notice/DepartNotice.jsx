@@ -4,7 +4,15 @@ import Notice from './Notice';
 
 
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+function DepartNotice() {
+=======
 function CollegeNotice() {
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+function CollegeNotice() {
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -48,6 +56,14 @@ function CollegeNotice() {
     );
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+export default DepartNotice;
+=======
 export default CollegeNotice;
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+export default CollegeNotice;
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
 

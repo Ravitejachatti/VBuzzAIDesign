@@ -22,4 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+<<<<<<< HEAD
+=======
+.env.local
+.env.*.local
+
+# Ignore local environment
+.env.development
+>>>>>>> vbuzzUpdatedFrontend/main
 .env

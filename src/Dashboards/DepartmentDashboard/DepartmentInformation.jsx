@@ -176,7 +176,11 @@ function DepartmentInformation({
       </div>
 
       {/* Department Overview */}
+<<<<<<< HEAD
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
+=======
+      {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
+>>>>>>> vbuzzUpdatedFrontend/main
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">{departmentInfo.name}</h1>
@@ -193,10 +197,17 @@ function DepartmentInformation({
             </div>
           </div>
         </div>
+<<<<<<< HEAD
       </div>
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+=======
+      </div> */}
+
+      {/* Statistics */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+>>>>>>> vbuzzUpdatedFrontend/main
         <StatCard
           title="Total Faculty"
           value={departmentInfo.totalFaculty}
@@ -221,7 +232,11 @@ function DepartmentInformation({
           icon={Award}
           color="from-orange-500 to-orange-600"
         />
+<<<<<<< HEAD
       </div>
+=======
+      </div> */}
+>>>>>>> vbuzzUpdatedFrontend/main
 
       {/* Main Information Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

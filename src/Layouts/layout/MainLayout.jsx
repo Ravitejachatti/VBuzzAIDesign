@@ -11,7 +11,11 @@ const MainLayout = () => {
       {/* Your layout components, like Header and Sidebar, go here */}
       
       {/* headher here */}
+<<<<<<< HEAD
+    {/* <Header/> */}
+=======
     <Header/>
+>>>>>>> vbuzzUpdatedFrontend/main
 
       <Navbar/>
 

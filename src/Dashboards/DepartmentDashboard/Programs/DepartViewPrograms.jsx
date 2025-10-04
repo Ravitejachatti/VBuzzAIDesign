@@ -1,4 +1,12 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+import { useState, useEffect } from "react";
+=======
 import React, { useState, useEffect } from "react";
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+import React, { useState, useEffect } from "react";
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -6,9 +14,20 @@ import {
   editProgram,
   deleteProgram,
 } from "../../../Redux/programs";
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+const DepartViewPrograms = () => {
+=======
 import { FaEdit, FaTrash, FaEye, FaGraduationCap, FaBook, FaClock, FaLink, FaSearch, FaFilter } from "react-icons/fa";
 
 const ViewPrograms = ({ departments }) => {
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+import { FaEdit, FaTrash, FaEye, FaGraduationCap, FaBook, FaClock, FaLink, FaSearch, FaFilter } from "react-icons/fa";
+
+const ViewPrograms = ({ departments }) => {
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const { universityName } = useParams();
   const dispatch = useDispatch();
   const { programs, loading, error: fetchError } = useSelector(
@@ -19,25 +38,59 @@ const ViewPrograms = ({ departments }) => {
   const [editingProgram, setEditingProgram] = useState(null);
   const [originalProgram, setOriginalProgram] = useState(null);
   const [error, setError] = useState(null);
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+  const departments = useSelector((state) => state.department.departments) || [];
+  // Fetch on mount or when universityName changes
+=======
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [filterLevel, setFilterLevel] = useState("");
 
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [filterLevel, setFilterLevel] = useState("");
+
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   useEffect(() => {
     if (token) {
       dispatch(fetchProgram({ token, universityName }));
     }
   }, [dispatch, token, universityName]);
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+  // Start editing: clone both original + editable
+=======
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const handleEdit = (prog) => {
     setOriginalProgram(prog);
     setEditingProgram({ ...prog });
     setError(null);
   };
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+  // Delete action
   const deleteprogram = (id) =>
     dispatch(deleteProgram({ token, universityName, id }));
 
+  // Save changes: diff and dispatch
+=======
+  const deleteprogram = (id) =>
+    dispatch(deleteProgram({ token, universityName, id }));
+
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+  const deleteprogram = (id) =>
+    dispatch(deleteProgram({ token, universityName, id }));
+
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const handleUpdate = () => {
     if (!token) {
       setError("Missing auth token");
@@ -47,7 +100,23 @@ const ViewPrograms = ({ departments }) => {
       setError("No program selected to edit");
       return;
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
+    // console the payload for debugging
+    console.log("Editing Program Payload:", {
+      token,
+      universityName,
+      id: editingProgram._id,
+      changes: editingProgram,
+    });
 
+    // Build a `changes` object
+=======
+
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
     const changes = {};
     for (const key in editingProgram) {
       if (["_id", "__v", "createdAt"].includes(key)) continue;
@@ -71,12 +140,93 @@ const ViewPrograms = ({ departments }) => {
       if (res.meta.requestStatus === "fulfilled") {
         setEditingProgram(null);
         setOriginalProgram(null);
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
       } else {
         setError(res.payload || "Failed to save changes");
       }
     });
   };
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+  console.log("Programs Data:", programs);
+=======
+  // Filter and sort programs
+  const filteredPrograms = programs
+    .filter(program => {
+      const matchesSearch = program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           program.type.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesLevel = !filterLevel || program.level === filterLevel;
+      return matchesSearch && matchesLevel;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "type":
+          return a.type.localeCompare(b.type);
+        case "level":
+          return a.level.localeCompare(b.level);
+        case "duration":
+          return parseInt(a.duration) - parseInt(b.duration);
+        default:
+          return 0;
+      }
+    });
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FaGraduationCap className="text-blue-600 text-xl" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Program Management</h1>
+                <p className="text-gray-600">Manage academic programs under {universityName}</p>
+              </div>
+            </div>
+            <div className="text-sm text-gray-500">
+              Total Programs: <span className="font-semibold text-blue-600">{programs.length}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters and Search */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search programs..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <FaFilter className="text-gray-400" />
+                <select
+                  value={filterLevel}
+                  onChange={(e) => setFilterLevel(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+<<<<<<< HEAD
+=======
   // Filter and sort programs
   const filteredPrograms = programs
     .filter(program => {
@@ -146,12 +296,44 @@ const ViewPrograms = ({ departments }) => {
                 >
                   <option value="">All Levels</option>
                   <option value="diploma">Diploma</option>
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+                  <option value="">All Levels</option>
+                  <option value="diploma">Diploma</option>
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
                   <option value="undergraduate">Undergraduate</option>
                   <option value="postgraduate">Postgraduate</option>
                   <option value="doctorate">Doctorate</option>
                   <option value="professional">Professional</option>
                 </select>
               </div>
+<<<<<<< HEAD
+<<<<<<< HEAD
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-4">
+              <button
+                onClick={handleUpdate}
+                disabled={!editingProgram}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+=======
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
+              >
+                <option value="name">Sort by Name</option>
+                <option value="type">Sort by Type</option>
+                <option value="level">Sort by Level</option>
+                <option value="duration">Sort by Duration</option>
+              </select>
+            </div>
+          </div>
+        </div>
+<<<<<<< HEAD
+      )}
+=======
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -165,6 +347,8 @@ const ViewPrograms = ({ departments }) => {
             </div>
           </div>
         </div>
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
         {/* Alert Messages */}
         {(fetchError || error) && (
@@ -414,8 +598,20 @@ const ViewPrograms = ({ departments }) => {
           </div>
         )}
       </div>
+<<<<<<< HEAD
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
     </div>
   );
 };
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+export default DepartViewPrograms;
+=======
 export default ViewPrograms;
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+export default ViewPrograms;
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04

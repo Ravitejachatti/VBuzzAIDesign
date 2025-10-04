@@ -42,6 +42,10 @@
     "react-router-dom": "^6.27.0",
     "react-select": "^5.10.1",
     "react-select-country-list": "^2.2.3",
+<<<<<<< HEAD
+=======
+    "recharts": "^2.15.4",
+>>>>>>> vbuzzUpdatedFrontend/main
     "redux": "^5.0.1",
     "redux-thunk": "^3.1.0",
     "xlsx": "^0.18.5",

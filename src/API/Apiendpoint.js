@@ -3,7 +3,11 @@ import axios from 'axios'
 // create an Axios instance
 
 const instance = axios.create({
+<<<<<<< HEAD
     baseURL : 'http://localhost:8000',
+=======
+    baseURL : 'http://10.156.44.78:8000',
+>>>>>>> vbuzzUpdatedFrontend/main
     headers:{
         'Content-Type': 'application/json',
     },

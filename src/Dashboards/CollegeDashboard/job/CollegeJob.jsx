@@ -1,3 +1,114 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+import  { useState } from 'react';
+import JobManager from './JobManager';
+import StudentsAppliedForJob from './StudentsAppliedForJob';
+=======
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Dialog } from "@headlessui/react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchJobs } from "../../../Redux/Jobslice";
+import {
+  Briefcase,
+  Building,
+  MapPin,
+  DollarSign,
+  Calendar,
+  Users,
+  Eye,
+  Filter,
+  Search,
+  X,
+  Clock,
+} from "lucide-react";
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
+
+const JobManager = () => {
+  const { universityName } = useParams();
+  const token = localStorage.getItem("University authToken");
+
+  const dispatch = useDispatch();
+  const { jobs = [], loading } = useSelector((state) => state.jobs);
+
+  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedYears, setSelectedYears] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState({ year: false, type: false });
+
+  // View-only modal
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [modalJob, setModalJob] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchJobs({ token, universityName }));
+  }, [dispatch, token, universityName]);
+
+  useEffect(() => {
+    setFilteredJobs(jobs);
+  }, [jobs]);
+
+  const uniqueYears = jobs.length ? [...new Set(jobs.map((j) => j.passingYear))] : [];
+  const uniqueTypes = jobs.length ? [...new Set(jobs.map((j) => j.type))] : [];
+
+  const isJobExpired = (closingDate) => new Date(closingDate) < new Date();
+
+  // Filtering
+  useEffect(() => {
+    const filtered = jobs.filter((job) => {
+      const matchesSearch =
+        !searchTerm ||
+        job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchYear = selectedYears.length === 0 || selectedYears.includes(job.passingYear);
+      const matchType = selectedTypes.length === 0 || selectedTypes.includes(job.type);
+
+      return matchesSearch && matchYear && matchType;
+    });
+    setFilteredJobs(filtered);
+  }, [jobs, searchTerm, selectedYears, selectedTypes]);
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Job Listings</h1>
+            <p className="text-blue-100 text-lg">Browse all job postings</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold">{filteredJobs.length}</div>
+            <div className="text-blue-200 text-sm">Total Jobs</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <div className="flex items-center mb-6">
+          <Filter className="w-5 h-5 text-gray-600 mr-2" />
+          <h2 className="text-xl font-semibold text-gray-900">Filters & Search</h2>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search jobs by title or company..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
+<<<<<<< HEAD
+=======
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Dialog } from "@headlessui/react";
@@ -100,6 +211,8 @@ const JobManager = () => {
           </div>
         </div>
 
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
         {/* Year & Type dropdowns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
@@ -291,4 +404,9 @@ const JobManager = () => {
   );
 };
 
+<<<<<<< HEAD
 export default JobManager;
+>>>>>>> vbuzzUpdatedFrontend/main
+=======
+export default JobManager;
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04

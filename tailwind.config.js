@@ -4,7 +4,10 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+<<<<<<< HEAD
   darkMode: false, // 👈 Add this line
+=======
+>>>>>>> vbuzzUpdatedFrontend/main
   theme: {
     extend: {
       zIndex: {
@@ -19,7 +22,26 @@ export default {
       fontSize: {
         '2xs': '0.625rem', // 10px
       },
+<<<<<<< HEAD
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
+      },
+      boxShadow: {
+        'custom-nav': '0 0 20px rgba(0, 0, 0, 0.10)',
+        'custom-field': '0 0 10px rgba(0, 0, 0, 0.10)',
+      },
+      colors: {
+        primary: "#1E5D9A",
+        secondary: "#EA5C0C",
+      },
     },
   },
   plugins: [],
 };
+=======
+    },
+  },
+  plugins: [],
+}
+
+>>>>>>> vbuzzUpdatedFrontend/main
