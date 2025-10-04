@@ -48,8 +48,13 @@ import {
 // Import components
 import DashboardOverview from '../Dashboards/CollegeDashboard/DashboardOverview';
 import ViewStudents from '../Dashboards/CollegeDashboard/Student/ViewStudents';
+<<<<<<< HEAD
 import CollegeInfo from '../Dashboards/CollegeDashboard/CollegeInformation';
 import Reports from '../Dashboards/CollegeDashboard/PlacementReports';
+=======
+import CollegeInfo from '../Dashboards/CollegeDashboard/collegeInfo/collegeInfo';
+import Reports from '../Dashboards/CollegeDashboard/placement/Reports';
+>>>>>>> vbuzzUpdatedFrontend/main
 import JobOpenings from '../Dashboards/CollegeDashboard/JobOpenings';
 import Notices from '../Dashboards/CollegeDashboard/Notices';
 import SettingsPage from '../Dashboards/CollegeDashboard/Settings';
@@ -59,6 +64,10 @@ import CollegeNotice from '../Dashboards/CollegeDashboard/Notice/CollegeNotice';
 import CollegeJob from '../Dashboards/CollegeDashboard/job/CollegeJob';
 import AddFaculty from '../Dashboards/CollegeDashboard/Faculty/AddFaculty';
 import ManageFaculty from '../Dashboards/CollegeDashboard/Faculty/ManageFaculty';
+<<<<<<< HEAD
+=======
+import DepartFaculty from '../Dashboards/DepartmentDashboard/Faculty/DepartFaculty';
+>>>>>>> vbuzzUpdatedFrontend/main
 import LoadingSpinner from '../components/Resuable/LoadingSpinner';
 
 // Redux imports
@@ -66,6 +75,12 @@ import { fetchDept } from '../Redux/DepartmentSlice';
 import { fetchProgram } from '../Redux/programs';
 import { fetchStudents } from '../Redux/Placement/StudentsSlice';
 import { fetchColleges } from '../Redux/UniversitySlice';
+<<<<<<< HEAD
+=======
+import { getAllFaculty } from '../Redux/College/faculty';
+import { fetchJobs } from '../Redux/Jobslice';
+import { fetchUniversityProfilePhoto } from '../Redux/UniversitySlice'
+>>>>>>> vbuzzUpdatedFrontend/main
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -82,6 +97,11 @@ function CollegeDashboard() {
   const [departments, setDepartments] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [students, setStudents] = useState([]);
+<<<<<<< HEAD
+=======
+  const [faculty, setFaculty ] = useState([])
+  const [jobs, setJobs ] = useState([])
+>>>>>>> vbuzzUpdatedFrontend/main
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [load, setLoad] = useState(false);
@@ -92,15 +112,33 @@ function CollegeDashboard() {
   const departmentsData = useSelector((state) => state.department.departments) || [];
   const programsData = useSelector((state) => state.programs.programs) || [];
   const studentsData = useSelector((state) => state.students.students) || [];
+<<<<<<< HEAD
+=======
+  const facultyData = useSelector((state) => state.faculty.allFaculty) || [];
+  const jobsData = useSelector((state) => state.jobs.jobs || 0 )
+  const openJobs = useSelector((state) => 
+  (state.jobs.jobs || []).filter(job => job.status === 'Open')
+);
+  const photoUrl = useSelector((state) => state.colleges.profileUrl);
+console.log("openjobs ", photoUrl)
+  
+  
+>>>>>>> vbuzzUpdatedFrontend/main
 
   // Calculate statistics
   const stats = {
     totalStudents: studentsData.length,
     totalDepartments: departmentsData.length,
     totalPrograms: programsData.length,
+<<<<<<< HEAD
     totalFaculty: 45, // This would come from faculty data
     placementRate: 85,
     activeJobs: 12
+=======
+    totalFaculty: facultyData.length, // This would come from faculty data
+    placementRate: 85,
+    activeJobs: openJobs.length
+>>>>>>> vbuzzUpdatedFrontend/main
   };
 
   const fetchCollegesData = async () => {
@@ -134,7 +172,11 @@ function CollegeDashboard() {
       const result = await dispatch(fetchDept({ token, universityName, BASE_URL }));
       if (result.meta.requestStatus === "fulfilled") {
         setError("");
+<<<<<<< HEAD
         setSuccess("Departments fetched successfully.");
+=======
+        setSuccess("Departments fetched successfully."); 
+>>>>>>> vbuzzUpdatedFrontend/main
         setDepartments(result.payload);
       } else {
         setError("Something went wrong.");
@@ -187,6 +229,76 @@ function CollegeDashboard() {
     setLoad(false);
   };
 
+<<<<<<< HEAD
+=======
+  const fetchFaculty = async () => {
+        if (!token) {
+      setError("Authentication token is missing.");
+      return;
+    }
+    setLoad(true);
+        try {
+      const result = await dispatch(getAllFaculty({ token, universityName, BASE_URL }));
+      if (result.meta.requestStatus === "fulfilled") {
+        setError("");
+        setSuccess("faculty fetched successfully.");
+        setFaculty(result.payload);
+      } else {
+        setError("Something went wrong.");
+      }
+    } catch (err) {
+      setError("Failed to fetch faculty.");
+    }
+    setLoad(false);
+
+  }
+
+
+  const fetchjobs = async () => {
+    if(!token) {
+      setError("Authentication token is missing")
+      return
+    }
+    setLoad(true)
+    try{
+      const result = await dispatch( fetchJobs({ token, universityName, BASE_URL}));
+      if(result.meta.requestStatus === "fulfilled"){
+        setError("")
+        setSuccess("JObs fetched successfully")
+        setJobs(result.payload)
+      }else{
+        setError("Something went wrong.")
+      }      
+    }catch(err) {
+      setError("Failed to fetch jobs")
+    }
+  }
+
+  const fetchProfilePhoto = async () => {
+    if (!token) {
+      setError("Authentication token is missing.");
+      return;
+    }
+    setLoad(true);
+    try {
+      const result = await dispatch(fetchUniversityProfilePhoto({ token, universityName, BASE_URL }));
+      if (result.meta.requestStatus === "fulfilled") {
+        setError("");
+        setSuccess("Profile photo fetched successfully.");
+        // The URL is returned in the payload
+        // You can set it in the state if needed
+        // setPhotoUrl(result.payload);
+      } else {
+        setError("Something went wrong.");
+      }
+    } catch (err) {
+      setError("Failed to fetch profile photo.");
+    }
+    setLoad(false);
+  };
+
+
+>>>>>>> vbuzzUpdatedFrontend/main
   useEffect(() => {
     const fetchAll = async () => {
       setIsFetchingAll(true);
@@ -195,6 +307,12 @@ function CollegeDashboard() {
         fetchDepartments(),
         fetchPrograms(),
         handleFetchStudents(),
+<<<<<<< HEAD
+=======
+        fetchFaculty(),
+        fetchjobs(),
+        fetchProfilePhoto()
+>>>>>>> vbuzzUpdatedFrontend/main
       ]);
       setIsFetchingAll(false);
     };
@@ -215,8 +333,12 @@ function CollegeDashboard() {
         { id: 'ViewStudents', label: 'Students', icon: Users, description: 'Manage student records', count: stats.totalStudents },
         { id: 'CollegeDepart', label: 'Departments', icon: Building2, description: 'Department management', count: stats.totalDepartments },
         { id: 'CollegeProgram', label: 'Programs', icon: BookOpen, description: 'Academic programs', count: stats.totalPrograms },
+<<<<<<< HEAD
         { id: 'AddFaculty', label: 'Add Faculty', icon: UserCheck, description: 'Add new faculty members' },
         { id: 'ManageFaculty', label: 'Manage Faculty', icon: GraduationCap, description: 'Faculty management', count: stats.totalFaculty }
+=======
+        { id: 'DepartFaculty', label: 'DepartFaculty', icon: UserCheck, description: 'Add new faculty members', count: stats.totalFaculty  }
+>>>>>>> vbuzzUpdatedFrontend/main
       ]
     },
     {
@@ -252,6 +374,11 @@ function CollegeDashboard() {
         departments={departmentsData}
         programs={programsData}
         students={studentsData}
+<<<<<<< HEAD
+=======
+        faculty={facultyData}
+        activeJobs={openJobs}
+>>>>>>> vbuzzUpdatedFrontend/main
       />
     ),
     ViewStudents: (
@@ -268,6 +395,7 @@ function CollegeDashboard() {
     CollegeInfo: (
       <CollegeInfo
         collegeId={user?.collegeId}
+<<<<<<< HEAD
         colleges={collegesData}
         departments={departmentsData}
         programs={programsData}
@@ -280,6 +408,22 @@ function CollegeDashboard() {
     CollegeNotice: (<CollegeNotice />),
     CollegeJob: (<CollegeJob />),
     AddFaculty: (<AddFaculty />),
+=======
+        token={token}
+        universityName={universityName}
+        // colleges={collegesData}
+        // departments={departmentsData}
+        // programs={programsData}
+        // collegeName={CollegeName}
+        // user={user}
+      />
+    ),
+    CollegeDepart: (<CollegeDepart  colleges={collegesData} programs={programsData}  />),
+    CollegeProgram: (<CollegeProgram colleges={collegesData} departments={departmentsData} programs={programsData}/>),
+    CollegeNotice: (<CollegeNotice />),
+    CollegeJob: (<CollegeJob />),
+    DepartFaculty: (<DepartFaculty />),
+>>>>>>> vbuzzUpdatedFrontend/main
     ManageFaculty: (
       <ManageFaculty
         collegeId={user?.collegeId}
@@ -358,7 +502,22 @@ function CollegeDashboard() {
             <div className="relative z-10">
               <div className="flex items-center space-x-3 mb-2">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center ring-2 ring-white/30">
+<<<<<<< HEAD
                   <Building2 className="w-6 h-6 text-white" />
+=======
+                  {/* add the image here */}
+                  {photoUrl ? ( 
+                    <img
+                      src={photoUrl}
+                      alt="University Logo"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <span className="text-lg font-semibold">    
+                      {CollegeName?.charAt(0)?.toUpperCase() || 'C'}
+                    </span>
+                  )}
+>>>>>>> vbuzzUpdatedFrontend/main
                 </div>
                 <div>
                   <h1 className="text-xl font-bold">{CollegeName}</h1>
@@ -447,9 +606,14 @@ function CollegeDashboard() {
                           : 'text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700'
                       }`}
                     >
+<<<<<<< HEAD
                       {isActive && (
                         <div className="absolute left-0 top-0 w-1 h-full bg-white rounded-r-full"></div>
                       )}
+=======
+                      {isActive
+                      }
+>>>>>>> vbuzzUpdatedFrontend/main
                       <Icon className={`w-5 h-5 relative z-10 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'}`} />
                       <div className="flex-1">
                         <div className={`font-semibold ${isActive ? 'text-white' : 'text-gray-900 group-hover:text-blue-700'}`}>
@@ -518,7 +682,11 @@ function CollegeDashboard() {
       </div>
 
       {/* Main Content */}
+<<<<<<< HEAD
       <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
+=======
+     <div className="flex-1 flex flex-col min-h-screen lg:ml-0 min-w-0">
+>>>>>>> vbuzzUpdatedFrontend/main
         {/* Top Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
           <div className="flex items-center justify-between px-6 py-4">
@@ -599,7 +767,11 @@ function CollegeDashboard() {
         </header>
 
         {/* Page Content */}
+<<<<<<< HEAD
         <main className="flex-1 p-6 bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20 overflow-auto">
+=======
+        <main className="flex-1 min-w-0 p-6 bg-gradient-to-br from-gray-50/50 via-blue-50/30 to-indigo-50/20 overflow-auto">
+>>>>>>> vbuzzUpdatedFrontend/main
           <div className="max-w-full">
             {components[activeComponent]}
           </div>

@@ -1,4 +1,5 @@
 import React from 'react'
+<<<<<<< HEAD
 
 import Hero from '../components/NormalPages/Service/Hero'
 import Service from '../components/NormalPages/Service/Service'
@@ -16,3 +17,16 @@ const Services = () => {
 }
 
 export default Services
+=======
+import ServicesPage from '../components/NormalPages/Service/Service';
+
+const Services = () => {
+  return (
+    <div>
+      <ServicesPage />
+    </div>
+  )
+}
+
+export default Services;
+>>>>>>> vbuzzUpdatedFrontend/main

@@ -4,7 +4,10 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+<<<<<<< HEAD
   darkMode: false, // 👈 Add this line
+=======
+>>>>>>> vbuzzUpdatedFrontend/main
   theme: {
     extend: {
       zIndex: {
@@ -19,6 +22,7 @@ export default {
       fontSize: {
         '2xs': '0.625rem', // 10px
       },
+<<<<<<< HEAD
       fontFamily: {
         poppins: ["Poppins", "sans-serif"],
       },
@@ -34,3 +38,10 @@ export default {
   },
   plugins: [],
 };
+=======
+    },
+  },
+  plugins: [],
+}
+
+>>>>>>> vbuzzUpdatedFrontend/main

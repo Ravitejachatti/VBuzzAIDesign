@@ -10,6 +10,10 @@ export const fetchJobs = createAsyncThunk(
   "jobs/fetchAll",
   async ({ token, universityName }, thunkAPI) => {
     try {
+<<<<<<< HEAD
+=======
+      console.log("🔔 Fetching all jobs with token:", token);
+>>>>>>> vbuzzUpdatedFrontend/main
       const res = await axios.get(
         `${BASE_URL}/job/getAllJobs?universityName=${universityName}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -25,6 +29,7 @@ export const fetchJobs = createAsyncThunk(
 // 2️⃣ Add a new job
 export const addjob= createAsyncThunk(
   "jobs/add",
+<<<<<<< HEAD
   async ({ token, formData, universityName }, thunkAPI) => {
     try {
       const res = await axios.post(
@@ -35,6 +40,35 @@ export const addjob= createAsyncThunk(
       return res.data.data;
     } catch (err) {
       return thunkAPI.rejectWithValue("Failed to add job");
+=======
+  async ({ token, formData, universityName, BASE_URL }, thunkAPI) => {
+    try {
+      // const uniSegment = encodeURIComponent((universityName));
+      const res = await axios.post(
+  `${BASE_URL}/job/addJob`,
+  formData,
+  {
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    params: { universityName } // e.g. "Andhra University" or "andhra-university"
+  }
+);
+      return res.data.data;
+    } catch (err) {
+      // Build a normalized, useful error payload
+      const isAxios = !!err.isAxiosError;
+      const status = isAxios ? err.response?.status ?? 0 : 0;
+      const data = isAxios ? err.response?.data : null;
+          return thunkAPI.rejectWithValue({
+        status,
+        message:
+          data?.message ||
+          data?.error ||
+          err.message ||
+          "Request failed while creating job.",
+        // many backends put field-level issues under `errors`
+        details: data?.errors || data || null,
+      });
+>>>>>>> vbuzzUpdatedFrontend/main
     }
   }
 );

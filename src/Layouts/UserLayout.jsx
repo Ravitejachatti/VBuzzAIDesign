@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+import React, { useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+>>>>>>> vbuzzUpdatedFrontend/main
 import MainLayout from './layout/MainLayout';
 import Header from './layout/Header';
 import Navbar from './layout/Navbar';
@@ -17,11 +23,19 @@ const UserLayout = () => {
   return (
     <>
 
+<<<<<<< HEAD
       {/* <Header /> */}
 
       <Navbar />
 
       <main className='mt-[40px]'>
+=======
+      <Header />
+
+      <Navbar />
+
+      <main>
+>>>>>>> vbuzzUpdatedFrontend/main
         <Outlet />
       </main>
       <Footer />

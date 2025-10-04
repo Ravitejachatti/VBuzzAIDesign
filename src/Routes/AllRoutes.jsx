@@ -9,24 +9,44 @@ import Home from "../pages/Home.jsx";
 import About from "../pages/About.jsx";
 import Services from "../pages/Service.jsx";
 import Contact from "../pages/contactus.jsx";
+<<<<<<< HEAD
 import UniversityOnboarding from "../pages/UniversityOnboarding.jsx";
 // import UniversityPage from "../pages/UniversityDashboard.jsx";
 import CollegeDashboard from "../pages/CollegeDashboard.jsx";
 import DepartmentDashboard from "../pages/DepartmentDashboard.jsx";
 // import PlacementDashboard from "../pages/PlacementDashboard.jsx";
 // import StudentDashboard from "../pages/StudentDashboard.jsx";
+=======
+import  UniversityOnboarding from "../pages/UniversityOnboarding.jsx";
+import UniversityPage from "../pages/UniversityDashboard.jsx";
+import CollegeDashboard from "../pages/CollegeDashboard.jsx";
+import DepartmentDashboard from "../pages/DepartmentDashboard.jsx";
+import PlacementDashboard from "../pages/PlacementDashboard.jsx";
+import StudentDashboard from "../pages/StudentDashboard.jsx";
+>>>>>>> vbuzzUpdatedFrontend/main
 // import PlacementDirectorPage from "../pages/PlacementDirectorPage.jsx";
 import StudentLoginPage from "../pages/StudentLogin.jsx";
 import UniversityLogin from "../pages/UniversityLogin.jsx";
 import ForgotPassword from "../components/Logins/StudentLogin/ForgotPassword.jsx";
 import ResetPassword from "../components/Logins/StudentLogin/ResetPasswordPage.jsx";
 import FindJobPage from "../components/NormalPages/FindJob/FindJob.jsx";
+<<<<<<< HEAD
 // import Corporate from "../pages/Corporate.jsx";
 // import UniversityPlacementPage from "../components/NormalPages/University/UniversityContact/Universities.jsx";
 
 
 
 import NotFound from "../components/NotFound.jsx";
+=======
+import Corporate from "../pages/Corporate.jsx";
+import UniversityPlacementPage from "../components/NormalPages/University/UniversityContact/Universities.jsx";
+// import Faculty from "../Dashboards/FacultyDashboard/Faculty.jsx"
+
+
+
+
+import NotFound from "../components/Resuable/NotFound.jsx";
+>>>>>>> vbuzzUpdatedFrontend/main
 // import VbuzzAdmin from "../pages/VbuzzAdmin.jsx";
 import Login from "../components/NormalPages/Login/login.jsx";
 
@@ -69,7 +89,11 @@ const AllRoutes = () => {
         <Route path="/" element={<UserLayout />}>
 
  {/* University Dashboard Routes */}
+<<<<<<< HEAD
  {/* <Route
+=======
+ <Route
+>>>>>>> vbuzzUpdatedFrontend/main
           path="/dashboard/:universityName"
           element={
             <ProtectedRoute
@@ -77,11 +101,19 @@ const AllRoutes = () => {
               redirectTo="/university-login"
             >
               <UniversityPage />
+<<<<<<< HEAD
            </ProtectedRoute>
           }
         /> */}
         <Route
           path="/dashboard/:universityName/colleges/:collegeName"
+=======
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/:universityName/colleges/:collegeName" 
+>>>>>>> vbuzzUpdatedFrontend/main
           element={
             <ProtectedRoute
               isAuthenticated={authStatus.isUniversityAuthenticated}
@@ -114,7 +146,11 @@ const AllRoutes = () => {
           }
         /> */}
         
+<<<<<<< HEAD
         {/* <Route
+=======
+        <Route
+>>>>>>> vbuzzUpdatedFrontend/main
           path="/dashboard/:universityName/placement/:placementName"
           element={
             <ProtectedRoute
@@ -124,8 +160,13 @@ const AllRoutes = () => {
               <PlacementDashboard />
             </ProtectedRoute>
           }
+<<<<<<< HEAD
         /> */}
         {/* Student Dashboard Route
+=======
+        />
+        {/* Student Dashboard Route */}
+>>>>>>> vbuzzUpdatedFrontend/main
         <Route
           path="/dashboard/:universityName/student/:registeredNumber"
           element={
@@ -136,18 +177,33 @@ const AllRoutes = () => {
               <StudentDashboard />
             </ProtectedRoute>
           }
+<<<<<<< HEAD
         /> */}
 
           <Route path="/" element={<Home />} />
+=======
+        /> 
+
+          <Route path="/" element={<Home />} />
+          {/* <Route path="/faculty" element={<Faculty />} /> */}
+>>>>>>> vbuzzUpdatedFrontend/main
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
           <Route path = "/find-job" element ={<FindJobPage/>}/>
           <Route path="/university-onboarding" element={<UniversityOnboarding />} />
+<<<<<<< HEAD
           {/* <Route path ="/page/companies"element={<Corporate/>}/> */}
           {/* <Route path="/page/universities" element={<UniversityPlacementPage/>}/> */}
           {/* <Route path="/admin/pending-universities" element={<VbuzzAdmin/>}/> */}
 
+=======
+          <Route path ="/page/companies"element={<Corporate/>}/>
+          <Route path="/page/universities" element={<UniversityPlacementPage/>}/>
+          {/* <Route path="/admin/pending-universities" element={<VbuzzAdmin/>}/> */}
+
+
+>>>>>>> vbuzzUpdatedFrontend/main
           <Route path="*" element={<NotFound />} />
 
           {/* <Route path="/vbuzz-admin" element={<VbuzzAdmin/>}/> */}

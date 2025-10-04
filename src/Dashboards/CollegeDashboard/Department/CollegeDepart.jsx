@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import  { useState } from 'react';
 import ManageDepartments from './CollegeAddDepart';
 import DepartmentList from './CollegeListDepart';
@@ -5,6 +6,15 @@ import DepartmentList from './CollegeListDepart';
 
 
 function CollegeDepart() {
+=======
+import React, { useState } from 'react';
+import ManageDepartments from './CollegeAddDepart';
+import DepartmentList from './CollegeListDepart'; 
+
+
+
+function Departments({colleges, programs}) {
+>>>>>>> vbuzzUpdatedFrontend/main
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -41,11 +51,20 @@ function CollegeDepart() {
 
             {/* Conditional Rendering */}
             <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '5px' }}>
+<<<<<<< HEAD
                 {activeTab === 'add' && <ManageDepartments  />}
                 {activeTab === 'edit' && <DepartmentList />}
+=======
+                {activeTab === 'add' && <ManageDepartments colleges={colleges} programs={programs} />}
+                {activeTab === 'edit' && <DepartmentList colleges={colleges} programs={programs}/>}
+>>>>>>> vbuzzUpdatedFrontend/main
             </div>
         </div>
     );
 }
 
+<<<<<<< HEAD
 export default CollegeDepart;
+=======
+export default Departments;
+>>>>>>> vbuzzUpdatedFrontend/main

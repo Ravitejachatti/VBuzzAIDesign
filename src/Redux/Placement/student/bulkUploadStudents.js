@@ -1,11 +1,19 @@
 // src/Redux/Placement/student/bulkUploadStudents.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+<<<<<<< HEAD
+=======
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+>>>>>>> vbuzzUpdatedFrontend/main
 
 // Async thunk
 export const bulkUploadStudents = createAsyncThunk(
   "bulkUpload/bulkUploadStudents",
+<<<<<<< HEAD
   async ({ formData, token, universityName, BASE_URL }, thunkAPI) => {
+=======
+  async ({ formData, token, universityName }, thunkAPI) => {
+>>>>>>> vbuzzUpdatedFrontend/main
     try {
       const { data } = await axios.post(
         `${BASE_URL}/student/bulk-upload?universityName=${universityName}`,

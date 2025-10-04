@@ -4,7 +4,11 @@ import ViewPrograms from './DepartViewPrograms';
 
 
 
+<<<<<<< HEAD
 function DepartProgram() {
+=======
+function Programs({colleges ,departments, programs}) {
+>>>>>>> vbuzzUpdatedFrontend/main
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -41,11 +45,20 @@ function DepartProgram() {
 
             {/* Conditional Rendering */}
             <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '5px' }}>
+<<<<<<< HEAD
                 {activeTab === 'add' && <AddProgram />}
                 {activeTab === 'edit' && <ViewPrograms />}
+=======
+                {activeTab === 'add' && <AddProgram colleges={colleges}  />}
+                {activeTab === 'edit' && <ViewPrograms colleges={colleges} departments={departments} />}
+>>>>>>> vbuzzUpdatedFrontend/main
             </div>
         </div>
     );
 }
 
+<<<<<<< HEAD
 export default DepartProgram;
+=======
+export default Programs;
+>>>>>>> vbuzzUpdatedFrontend/main
