@@ -5,10 +5,14 @@ import ViewPrograms from './CollegeViewPrograms';
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function CollegeProgram() {
 =======
 function Programs({colleges ,departments, programs}) {
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+function Programs({colleges ,departments, programs}) {
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -46,19 +50,28 @@ function Programs({colleges ,departments, programs}) {
             {/* Conditional Rendering */}
             <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '5px' }}>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 {activeTab === 'add' && <AddProgram />}
                 {activeTab === 'edit' && <ViewPrograms />}
 =======
                 {activeTab === 'add' && <AddProgram colleges={colleges}  />}
                 {activeTab === 'edit' && <ViewPrograms colleges={colleges} departments={departments} />}
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+                {activeTab === 'add' && <AddProgram colleges={colleges}  />}
+                {activeTab === 'edit' && <ViewPrograms colleges={colleges} departments={departments} />}
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
             </div>
         </div>
     );
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 export default CollegeProgram;
 =======
 export default Programs;
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+export default Programs;
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04

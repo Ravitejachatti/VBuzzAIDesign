@@ -50,11 +50,15 @@ import DashboardOverview from '../Dashboards/CollegeDashboard/DashboardOverview'
 import ViewStudents from '../Dashboards/CollegeDashboard/Student/ViewStudents';
 <<<<<<< HEAD
 import CollegeInfo from '../Dashboards/CollegeDashboard/CollegeInformation';
+<<<<<<< HEAD
 import Reports from '../Dashboards/CollegeDashboard/PlacementReports';
 =======
 import CollegeInfo from '../Dashboards/CollegeDashboard/collegeInfo/collegeInfo';
 import Reports from '../Dashboards/CollegeDashboard/placement/Reports';
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+import Reports from '../Dashboards/CollegeDashboard/placement/Reports';
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 import JobOpenings from '../Dashboards/CollegeDashboard/JobOpenings';
 import Notices from '../Dashboards/CollegeDashboard/Notices';
 import SettingsPage from '../Dashboards/CollegeDashboard/Settings';
@@ -76,11 +80,16 @@ import { fetchProgram } from '../Redux/programs';
 import { fetchStudents } from '../Redux/Placement/StudentsSlice';
 import { fetchColleges } from '../Redux/UniversitySlice';
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import { getAllFaculty } from '../Redux/College/faculty';
 import { fetchJobs } from '../Redux/Jobslice';
 import { fetchUniversityProfilePhoto } from '../Redux/UniversitySlice'
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+import { getAllFaculty } from '../Redux/College/faculty';
+import { fetchJobs } from '../Redux/Jobslice';
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -98,10 +107,15 @@ function CollegeDashboard() {
   const [programs, setPrograms] = useState([]);
   const [students, setStudents] = useState([]);
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   const [faculty, setFaculty ] = useState([])
   const [jobs, setJobs ] = useState([])
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+  const [faculty, setFaculty ] = useState([])
+  const [jobs, setJobs ] = useState([])
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [load, setLoad] = useState(false);
@@ -113,23 +127,33 @@ function CollegeDashboard() {
   const programsData = useSelector((state) => state.programs.programs) || [];
   const studentsData = useSelector((state) => state.students.students) || [];
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const facultyData = useSelector((state) => state.faculty.allFaculty) || [];
   const jobsData = useSelector((state) => state.jobs.jobs || 0 )
   const openJobs = useSelector((state) => 
   (state.jobs.jobs || []).filter(job => job.status === 'Open')
 );
+<<<<<<< HEAD
   const photoUrl = useSelector((state) => state.colleges.profileUrl);
 console.log("openjobs ", photoUrl)
   
   
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+console.log("openjobs ", openJobs)
+  
+  
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
   // Calculate statistics
   const stats = {
     totalStudents: studentsData.length,
     totalDepartments: departmentsData.length,
     totalPrograms: programsData.length,
+<<<<<<< HEAD
 <<<<<<< HEAD
     totalFaculty: 45, // This would come from faculty data
     placementRate: 85,
@@ -139,6 +163,11 @@ console.log("openjobs ", photoUrl)
     placementRate: 85,
     activeJobs: openJobs.length
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+    totalFaculty: facultyData.length, // This would come from faculty data
+    placementRate: 85,
+    activeJobs: openJobs.length
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   };
 
   const fetchCollegesData = async () => {
@@ -230,7 +259,10 @@ console.log("openjobs ", photoUrl)
   };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const fetchFaculty = async () => {
         if (!token) {
       setError("Authentication token is missing.");
@@ -274,6 +306,7 @@ console.log("openjobs ", photoUrl)
     }
   }
 
+<<<<<<< HEAD
   const fetchProfilePhoto = async () => {
     if (!token) {
       setError("Authentication token is missing.");
@@ -299,6 +332,8 @@ console.log("openjobs ", photoUrl)
 
 
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   useEffect(() => {
     const fetchAll = async () => {
       setIsFetchingAll(true);
@@ -308,11 +343,16 @@ console.log("openjobs ", photoUrl)
         fetchPrograms(),
         handleFetchStudents(),
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         fetchFaculty(),
         fetchjobs(),
         fetchProfilePhoto()
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+        fetchFaculty(),
+        fetchjobs()
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
       ]);
       setIsFetchingAll(false);
     };
@@ -375,10 +415,15 @@ console.log("openjobs ", photoUrl)
         programs={programsData}
         students={studentsData}
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         faculty={facultyData}
         activeJobs={openJobs}
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+        faculty={facultyData}
+        activeJobs={openJobs}
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
       />
     ),
     ViewStudents: (
@@ -403,8 +448,8 @@ console.log("openjobs ", photoUrl)
         user={user}
       />
     ),
-    CollegeDepart: (<CollegeDepart />),
-    CollegeProgram: (<CollegeProgram />),
+    CollegeDepart: (<CollegeDepart  colleges={collegesData} programs={programsData}  />),
+    CollegeProgram: (<CollegeProgram colleges={collegesData} departments={departmentsData} programs={programsData}/>),
     CollegeNotice: (<CollegeNotice />),
     CollegeJob: (<CollegeJob />),
     AddFaculty: (<AddFaculty />),

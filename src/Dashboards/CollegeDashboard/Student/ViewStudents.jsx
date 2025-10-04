@@ -1,24 +1,42 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+=======
+import React, { useEffect, useMemo, useState } from "react";
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 import * as XLSX from "xlsx";
-import ToggleEligibility from "../../CollegeDashboard/PlacementDashboard/PlacementReport/ToggleEligibility"
 import Select from "react-select";
 import { saveAs } from "file-saver";
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useParams } from "react-router-dom";
 import {
-  editStudent,
-  deleteStudent,
-  selectSingleStatus,
-  selectSingleError,
-} from "../../../Redux/Placement/student/singleStudentadd";
-import { fetchStudents ,selectStudentsLoading} from "../../../Redux/Placement/StudentsSlice";
+  Users,
+  Download,
+  Search,
+  Filter,
+  X,
+  Mail,
+  Phone,
+  Calendar,
+  GraduationCap,
+  Building,
+  User as UserIcon,
+  FileText
+} from "lucide-react";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const StudentList = () => {
+  const { universityName } = useParams();
+  const token = localStorage.getItem("University authToken");
 
-const ViewStudents = () => {
-  const dispatch = useDispatch();
+  // Redux store
+  const colleges    = useSelector((state) => state.colleges.colleges) || [];
+  const departments = useSelector((state) => state.department.departments) || [];
+  const programs    = useSelector((state) => state.programs.programs) || [];
+  const students    = useSelector((state) => state.students.students) || [];
+  const loading     = useSelector((state) => state.students.loading);
 
+<<<<<<< HEAD
   const allColumns = [
 =======
 import React, { useEffect, useMemo, useState } from "react";
@@ -56,6 +74,10 @@ const StudentList = () => {
   // Columns for export
   const allColumns = useMemo(() => ([
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+  // Columns for export
+  const allColumns = useMemo(() => ([
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
     { label: "Name", value: "name" },
     { label: "Registration Number", value: "registered_number" },
     { label: "Email", value: "email" },
@@ -83,25 +105,23 @@ const StudentList = () => {
     { label: "Masters CGPA", value: "masters_cgpa" },
     { label: "Can Apply", value: "can_apply" },
 <<<<<<< HEAD
+<<<<<<< HEAD
   ];
   const [selectedColumns, setSelectedColumns] = useState([]); // Default all selected
   const { universityName } = useParams();
   const token = localStorage.getItem("University authToken");
+=======
+  ]), []);
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
-  // Get from Redux store
-  const colleges = useSelector((state) => state.colleges.colleges) || [];
-  const departments = useSelector((state) => state.department.departments) || [];
-  const programs = useSelector((state) => state.programs.programs) || [];
-  const students = useSelector((state) => state.students.students) || [];
-  const loading  = useSelector(selectStudentsLoading);
-  const singleError = useSelector(selectSingleError);
-  
+  const [selectedColumns, setSelectedColumns] = useState([]);
 
-  // derive graduationYears from the student objects
-  const graduationYears = Array.from(
-    new Set(students.map((s) => s.graduation_year))
+  const graduationYears = useMemo(
+    () => Array.from(new Set((students || []).map((s) => s.graduation_year))).filter(Boolean),
+    [students]
   );
 
+<<<<<<< HEAD
   const [programId, setProgramId] = useState("");
   const [filteredStudents, setFilteredStudents] = useState([]);
 =======
@@ -115,10 +135,13 @@ const StudentList = () => {
   );
 
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const [filters, setFilters] = useState({
     graduationYear: "",
     college: "",
     department: "",
+<<<<<<< HEAD
 <<<<<<< HEAD
     programId: ""  // ✅ Add this
   });
@@ -135,112 +158,61 @@ const StudentList = () => {
     graduation_year: "",
     username: "",
     password: "",
+=======
+    programId: ""
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   });
 
-  // Add new state for search
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchType, setSearchType] = useState("name"); // 'name' or 'registration'
+  const [searchType, setSearchType] = useState("name"); // 'name' | 'registration'
 
+  // Helpers
+  const getProgramName = (programId) => programs.find((p) => p._id === programId)?.name || "N/A";
+  const getCollegeName = (collegeId) => colleges.find((c) => c._id === collegeId)?.name || "N/A";
+  const getDepartmentName = (departmentId) => departments.find((d) => d._id === departmentId)?.name || "N/A";
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Are you sure you want to delete this student?")) return;
-    dispatch(deleteStudent({
-      studentId: id,
-      token,
-      universityName,
-      BASE_URL
-    })).then((action) => {
-      if (action.type.endsWith('/fulfilled')) {
-        alert("Student deleted successfully!");
-        dispatch(fetchStudents({ token, universityName, BASE_URL }));
-      } else {
-        alert("Delete failed: " + (singleError || 'Unknown error'));
-      }
-    });
+  const formatDate = (dob) => {
+    if (!dob) return '';
+    const date = new Date(dob);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   };
 
-  const handleEditClick = (student) => {
-    setEditingStudentId(student._id);
-    setEditFormData({
-      canApply: student.canApply || "",
-      name: student.name || "",
-      email: student.email || "",
-      registered_number: student.registered_number || "",
-      phone: student.phone || "",
-      enrollment_year: student.enrollment_year || "",
-      graduation_year: student.graduation_year || "",
-      username: student.credentials?.username || "",
-      password: "", // Do not pre-fill password for security reasons
-    });
+  const calculateAge = (dob) => {
+    if (!dob) return '';
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
   };
 
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    dispatch(editStudent({
-      studentId: editingStudentId,
-      data: editFormData,
-      token,
-      universityName,
-      BASE_URL
-    })).then((action) => {
-      if (action.type.endsWith('/fulfilled')) {
-        alert("Student updated successfully!");
-        setEditingStudentId(null);
-            dispatch(fetchStudents({ token, universityName, BASE_URL }));
-      } else {
-        alert("Update failed: " + (singleError || 'Unknown error'));
-      }
-    });
-  };
-
-
-  const handleCancelEdit = () => {
-    setEditingStudentId(null);
-    setEditFormData({
-      canApply: "",
-      name: "",
-      email: "",
-      registered_number: "",
-      phone: "",
-      enrollment_year: "",
-      graduation_year: "",
-      username: "",
-      password: "",
-    });
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [name]: value,
-    }));
-  };
-
-
-
-  // Update the student's canApply status in the filtered list
-  const handleStatusUpdate = (studentId, canApply) => {
-    setFilteredStudents((prevStudents) =>
-      prevStudents.map((student) =>
-        student._id === studentId ? { ...student, canApply } : student
-      )
+  // Derived options based on filter chaining
+  const filteredDepartments = useMemo(() => {
+    if (!filters.college) return departments;
+    return departments.filter((d) =>
+      d.college === filters.college ||
+      d.collegeId === filters.college ||
+      (d.college && d.college._id === filters.college)
     );
-  };
+  }, [departments, filters.college]);
 
+  const filteredPrograms = useMemo(() => {
+    if (!filters.department) return programs;
+    return programs.filter((p) =>
+      p.department === filters.department ||
+      p.departmentId === filters.department ||
+      (p.department && p.department._id === filters.department)
+    );
+  }, [programs, filters.department]);
 
-
-  useEffect(() => {
-    const filtered = students.filter((student) => {
+  const filteredStudents = useMemo(() => {
+    return (students || []).filter((student) => {
       const { graduationYear, college, department, programId } = filters;
+<<<<<<< HEAD
 
       // Apply filters
 =======
@@ -298,6 +270,8 @@ const StudentList = () => {
     return (students || []).filter((student) => {
       const { graduationYear, college, department, programId } = filters;
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
       const filterMatch =
         (!graduationYear || student.graduation_year === parseInt(graduationYear)) &&
         (!college || student.collegeId === college) &&
@@ -305,65 +279,43 @@ const StudentList = () => {
         (!programId || student.programId === programId);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       // Apply search
 =======
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
       let searchMatch = true;
       if (searchTerm) {
         if (searchType === "name") {
           searchMatch = student.name?.toLowerCase().includes(searchTerm.toLowerCase());
 <<<<<<< HEAD
+<<<<<<< HEAD
         } else if (searchType === "registration") {
+=======
+        } else {
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
           searchMatch = student.registered_number?.toLowerCase().includes(searchTerm.toLowerCase());
         }
       }
-
       return filterMatch && searchMatch;
     });
-    setFilteredStudents(filtered);
   }, [students, filters, searchTerm, searchType]);
 
-  // Add search handler
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleSearchTypeChange = (e) => {
-    setSearchType(e.target.value);
-    setSearchTerm(""); // Clear search term when changing search type
-  };
-
-
-
-
-  // to find the total number of students fetched and displayed along side the student list
   const totalStudents = filteredStudents.length;
 
-  const getProgramName = (programId) => {
-    const program = programs.find((program) => program._id === programId);
-    return program ? program.name : "N/A";
-  };
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
 
-  // form of date of birth:
-  const formatDate = (dob) => {
-    if (!dob) return '';
-    const date = new Date(dob);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  // calculate the date of birth 
-  const calculateAge = (dob) => {
-    if (!dob) return '';
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
+    // Reset downstream filters when parent changes
+    if (name === "college") {
+      setFilters({ graduationYear: filters.graduationYear, college: value, department: "", programId: "" });
+    } else if (name === "department") {
+      setFilters({ ...filters, department: value, programId: "" });
+    } else {
+      setFilters({ ...filters, [name]: value });
     }
+<<<<<<< HEAD
     return age;
 =======
         } else {
@@ -388,6 +340,8 @@ const StudentList = () => {
       setFilters({ ...filters, [name]: value });
     }
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   };
 
   const downloadExcel = () => {
@@ -403,10 +357,14 @@ const StudentList = () => {
     const selectedKeys = selectedColumns.map(col => col.value);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     const formattedStudents = filteredStudents.map((student, index) => {
 =======
     const formatted = filteredStudents.map((student, index) => {
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+    const formatted = filteredStudents.map((student, index) => {
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
       const row = { SNo: index + 1 };
       if (selectedKeys.includes("name")) row.Name = student.name || "";
       if (selectedKeys.includes("registered_number")) row["Registration Number"] = student.registered_number || "";
@@ -417,12 +375,17 @@ const StudentList = () => {
       if (selectedKeys.includes("gender")) row.Gender = student.gender || "";
       if (selectedKeys.includes("caste")) row.Caste = student.caste || "";
 <<<<<<< HEAD
+<<<<<<< HEAD
       if (selectedKeys.includes("college")) row.College = colleges.find(c => c._id === student.collegeId)?.name || "N/A";
       if (selectedKeys.includes("department")) row.Department = departments.find(d => d._id === student.departmentId)?.name || "N/A";
 =======
       if (selectedKeys.includes("college")) row.College = getCollegeName(student.collegeId);
       if (selectedKeys.includes("department")) row.Department = getDepartmentName(student.departmentId);
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+      if (selectedKeys.includes("college")) row.College = getCollegeName(student.collegeId);
+      if (selectedKeys.includes("department")) row.Department = getDepartmentName(student.departmentId);
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
       if (selectedKeys.includes("program")) row.Program = getProgramName(student.programId);
       if (selectedKeys.includes("graduation_year")) row["Graduation Year"] = student.graduation_year || "";
       if (selectedKeys.includes("tenth_school")) row["10th School"] = student.tenth?.institutionName || "";
@@ -443,14 +406,21 @@ const StudentList = () => {
     });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     const worksheet = XLSX.utils.json_to_sheet(formattedStudents);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+=======
+    const ws = XLSX.utils.json_to_sheet(formatted);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([buf], { type: "application/octet-stream" });
     saveAs(data, "Students_Selected_Columns.xlsx");
   };
+<<<<<<< HEAD
 =======
     const ws = XLSX.utils.json_to_sheet(formatted);
     const wb = XLSX.utils.book_new();
@@ -462,6 +432,9 @@ const StudentList = () => {
   };
 
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -477,6 +450,7 @@ const StudentList = () => {
   }
 
   return (
+<<<<<<< HEAD
 <<<<<<< HEAD
     <>
       <div>
@@ -550,13 +524,108 @@ const StudentList = () => {
                 </option>
               ))}
           </select>
+=======
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Student Management</h1>
+            <p className="text-blue-100 text-lg">View and export student records</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold">{totalStudents}</div>
+            <div className="text-blue-200 text-sm">Total Students</div>
+          </div>
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
         </div>
-        {/* Add Search Bar */}
-        <div className="flex flex-col sm:flex-row gap-10 mb-4">
+      </div>
+
+      {/* Filters & Search */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <div className="flex items-center mb-6">
+          <Filter className="w-5 h-5 text-gray-600 mr-2" />
+          <h2 className="text-xl font-semibold text-gray-900">Filters & Search</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Calendar className="w-4 h-4 inline mr-1" />
+              Graduation Year
+            </label>
+            <select
+              name="graduationYear"
+              value={filters.graduationYear}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Years</option>
+              {graduationYears.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Building className="w-4 h-4 inline mr-1" />
+              College
+            </label>
+            <select
+              name="college"
+              value={filters.college}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Colleges</option>
+              {colleges.map((college) => (
+                <option key={college._id} value={college._id}>{college.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+            <select
+              name="department"
+              value={filters.department}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Departments</option>
+              {filteredDepartments.map((department) => (
+                <option key={department._id} value={department._id}>{department.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <GraduationCap className="w-4 h-4 inline mr-1" />
+              Program
+            </label>
+            <select
+              name="programId"
+              value={filters.programId}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Programs</option>
+              {filteredPrograms.map((program) => (
+                <option key={program._id} value={program._id}>{program.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1">
-            <div className="flex items-center border rounded overflow-hidden">
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
               <select
                 value={searchType}
+<<<<<<< HEAD
                 onChange={handleSearchTypeChange}
                 className="px-3 py-3 border-r bg-gray-100 mr-3"
 =======
@@ -662,10 +731,15 @@ const StudentList = () => {
                 onChange={(e) => { setSearchType(e.target.value); setSearchTerm(""); }}
                 className="px-3 py-3 border-r border-gray-300 bg-gray-50 text-sm"
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+                onChange={(e) => { setSearchType(e.target.value); setSearchTerm(""); }}
+                className="px-3 py-3 border-r border-gray-300 bg-gray-50 text-sm"
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
               >
                 <option value="name">Search by Name</option>
                 <option value="registration">Search by Registration No.</option>
               </select>
+<<<<<<< HEAD
 <<<<<<< HEAD
               <input
                 type="text"
@@ -674,11 +748,24 @@ const StudentList = () => {
                 onChange={handleSearch}
                 className="flex-1 p-2 "
               />
+=======
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder={`Search by ${searchType === 'name' ? 'Name' : 'Registration No.'}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="p-3 text-gray-500 hover:text-gray-700"
+                  className="p-3 text-gray-500 hover:text-gray-700 transition-colors"
                 >
+<<<<<<< HEAD
                   ×
 =======
               <div className="relative flex-1">
@@ -698,11 +785,15 @@ const StudentList = () => {
                 >
                   <X className="w-4 h-4" />
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+                  <X className="w-4 h-4" />
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
                 </button>
               )}
             </div>
           </div>
         </div>
+<<<<<<< HEAD
 <<<<<<< HEAD
         <div className="flex flex-col mb-4">
           <label className="font-semibold mb-2">Select Columns to Export:</label>
@@ -715,76 +806,89 @@ const StudentList = () => {
             className="w-full"
           />
         </div>
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 
-
-        <div className="flex justify-start mb-4">
+        {/* Export */}
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <FileText className="w-4 h-4 inline mr-1" />
+              Select Columns to Export
+            </label>
+            <Select
+              isMulti
+              options={allColumns}
+              value={selectedColumns}
+              onChange={(selected) => setSelectedColumns(selected)}
+              placeholder="Select columns..."
+              className="text-sm"
+            />
+          </div>
           <button
             onClick={downloadExcel}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded text-sm"
+            className="flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors"
           >
+            <Download className="w-4 h-4 mr-2" />
             Download Excel
           </button>
         </div>
+      </div>
+
+      {/* Students Table */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">Students List</h2>
+            <span className="text-sm text-gray-600">{totalStudents} students</span>
+          </div>
+        </div>
 
         <div className="overflow-x-auto">
-          {/* Table for displaying students */}
-          <table className="min-w-full border border-gray-300">
-            <thead className="bg-gray-100">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="border px-1 text-2xs text-right">#</th>
-                <th className="border px-1 text-2xs text-left">Registration</th>
-                <th className="border px-1 text-2xs text-left">Name</th>
-                <th className="border px-1 text-2xs text-left">Email</th>
-                <th className="border px-1 text-2xs text-left">Phone</th>
-                <th className="border px-1 text-2xs text-left">DOB</th>
-                <th className="border px-1 text-2xs text-left">Age</th>
-                <th className="border px-1 text-2xs text-left">Gender</th>
-                <th className="border px-1 text-2xs text-left">caste</th>
-                <th className="border px-1 text-2xs text-left">College</th>
-                <th className="border px-1 text-2xs text-left">Department</th>
-                <th className="border px-1 text-2xs text-left">program</th>
-                <th className="border px-1 text-2xs text-left">Graduation_Year</th>
-                <th className="border px-1 text-2xs text-left">10th School Name</th>
-                <th className="border px-1 text-2xs text-left">10th CGPA</th>
-                <th className="border px-1 text-2xs text-left">12th School Name</th>
-                <th className="border px-1 text-2xs text-left">12th Branch</th>
-                <th className="border px-1 text-2xs text-left">12th CGPA</th>
-                <th className="border px-1 text-2xs text-left">UG college</th>
-                <th className="border px-1 text-2xs text-left">UG Degree Name</th>
-                <th className="border px-1 text-2xs text-left">UG CGPA</th>
-                <th className="border px-1 text-2xs text-left">UG-Project title</th>
-                <th className="border px-1 text-2xs text-left">UG-Project organization</th>
-                <th className="border px-1 text-2xs text-left">Masters College Name</th>
-                <th className="border px-1 text-2xs text-left">Masters Specialization</th>
-                <th className="border px-1 text-2xs text-left">Masters CGPA</th>
-
-
-                <th className="border px-1 text-2xs text-left">canApply</th>
-                <th className="border px-1 text-2xs text-left">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Personal</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Education</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredStudents?.length > 0 ? (
                 filteredStudents.map((student, index) => (
-                  <tr key={student._id} className="border-b">
-                    <td className="border px-1 text-2xs  text-right">{index + 1}.</td>
-                    <td className="border px-1 text-2xs ">{student?.registered_number}</td>
-                    <td className="border px-1 text-2xs">{student?.name}</td>
-                    <td className="border px-1 text-2xs">{student?.email}</td>
-                    <td className="border px-1 text-2xs">{student?.phone}</td>
-                    <td className="border px-1 text-2xs">{formatDate(student?.dateOfBirth)}</td>
-                    <td className="border px-1 text-xs">{calculateAge(student?.dateOfBirth)}</td>
-                    <td className="border px-1 text-2xs">{student?.gender}</td>
-                    <td className="border px-1 text-2xs">{student?.caste}</td>
-                    <td className="border px-1 text-2xs">
-                      {colleges.find((college) => college._id === student.collegeId)?.name}
+                  <tr key={student._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {index + 1}
                     </td>
-                    <td className="border px-1 text-2xs">
-                      {departments.find((department) => department._id === student.departmentId)?.name}
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <UserIcon className="w-5 h-5 text-blue-600" />
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{student?.name}</div>
+                          <div className="text-sm text-gray-500">{student?.registered_number}</div>
+                        </div>
+                      </div>
                     </td>
-                    <td className="border px-1 text-2xs">
-                      {getProgramName(student.programId)} {/* Display program name instead of ID */}
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        <div className="flex items-center mb-1">
+                          <Mail className="w-3 h-3 mr-1 text-gray-400" />
+                          <span className="truncate max-w-[150px]">{student?.email}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Phone className="w-3 h-3 mr-1 text-gray-400" />
+                          {student?.phone}
+                        </div>
+                      </div>
                     </td>
+<<<<<<< HEAD
                     <td className="border px-1  text-2xs">{student.graduation_year}</td>
                     <td className="border px-1 text-2xs">{student.tenth?.institutionName
                     }</td>
@@ -901,6 +1005,8 @@ const StudentList = () => {
                         </div>
                       </div>
                     </td>
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         <div className="font-medium">{formatDate(student?.dateOfBirth)}</div>
@@ -933,7 +1039,10 @@ const StudentList = () => {
                             <span className="font-medium">Masters:</span> {student.masters?.percentageOrCGPA}
                           </div>
                         )}
+<<<<<<< HEAD
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
                       </div>
                     </td>
                   </tr>
@@ -941,19 +1050,26 @@ const StudentList = () => {
               ) : (
                 <tr>
 <<<<<<< HEAD
+<<<<<<< HEAD
                   <td colSpan="9" className="text-center py-4">
                     No students available
 =======
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
                   <td colSpan="6" className="px-4 py-12 text-center text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p className="text-lg font-medium">No students found</p>
                     <p className="text-sm">Try adjusting your filters or search terms</p>
+<<<<<<< HEAD
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+<<<<<<< HEAD
 <<<<<<< HEAD
 
           {/* Popup/Modal for editing student */}
@@ -1077,13 +1193,15 @@ const StudentList = () => {
             </div>
           )}
 
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
         </div>
-
       </div>
-    </>
+    </div>
   );
 };
 
+<<<<<<< HEAD
 export default ViewStudents;
 =======
         </div>
@@ -1094,3 +1212,6 @@ export default ViewStudents;
 
 export default StudentList;
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+export default StudentList;
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04

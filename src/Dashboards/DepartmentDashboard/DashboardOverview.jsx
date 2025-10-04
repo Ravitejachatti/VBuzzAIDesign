@@ -37,10 +37,10 @@ function DashboardOverview({
 >>>>>>> vbuzzUpdatedFrontend/main
 }) {
   const [stats, setStats] = useState({
-    totalStudents: 0,
-    totalFaculty: 0,
-    totalPrograms: 0,
-    activeJobs: 0,
+    totalStudents: students?.length || 0,
+    totalFaculty: faculty?.length || 0,
+    totalPrograms: programs.length || 0,
+    activeJobs: activeJobs.length || 0,
     placementRate: 0,
     averageGPA: 0
   });

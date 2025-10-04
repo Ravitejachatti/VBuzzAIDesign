@@ -42,16 +42,19 @@ function DashboardOverview({
   departments, 
   programs, 
 <<<<<<< HEAD
+<<<<<<< HEAD
   students 
+=======
+  students,
+  faculty,
+  activeJobs
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
 }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedPeriod, setSelectedPeriod] = useState('month');
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
+<<<<<<< HEAD
 =======
   students,
   faculty,
@@ -62,6 +65,8 @@ function DashboardOverview({
   console.log("departments program length", departments.programs?.length);
 
 
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   const LiveClock = React.memo(function LiveClock() {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -76,12 +81,16 @@ function DashboardOverview({
   //   return () => clearInterval(timer);
   // }, []);
   console.log("active jobs ", activeJobs)
+<<<<<<< HEAD
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   // Calculate statistics
   const stats = {
     totalStudents: students?.length || 0,
     totalDepartments: departments?.length || 0,
     totalPrograms: programs?.length || 0,
+<<<<<<< HEAD
 <<<<<<< HEAD
     totalFaculty: 45, // This would come from faculty data
     placementRate: 85,
@@ -91,16 +100,27 @@ function DashboardOverview({
     placementRate: 85,
     activeJobs: activeJobs.length,
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+    totalFaculty: faculty.length || 0, // This would come from faculty data
+    placementRate: 85,
+    activeJobs: activeJobs.length,
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
     pendingApplications: 28,
     completedPlacements: 156
   };
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
   console.log("active jobs")
 
 
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+  console.log("active jobs")
+
+
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
   // Mock data for charts and activities
   const recentActivities = [
     {
@@ -344,6 +364,7 @@ function DashboardOverview({
               </h1>
               <p className="text-blue-100 text-lg mb-4">
 <<<<<<< HEAD
+<<<<<<< HEAD
                 {collegeName} Dashboard • {currentTime.toLocaleDateString('en-US', { 
                   weekday: 'long', 
                   year: 'numeric', 
@@ -354,6 +375,10 @@ function DashboardOverview({
                 {collegeName}
                  
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+                {collegeName}
+                 
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
               </p>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
@@ -363,10 +388,14 @@ function DashboardOverview({
                 <div className="flex items-center space-x-2">
                   <Clock className="w-4 h-4 text-blue-200" />
 <<<<<<< HEAD
+<<<<<<< HEAD
                   <span className="text-blue-100">{currentTime.toLocaleTimeString()}</span>
 =======
                   <span className="text-blue-100"><LiveClock/></span>
 >>>>>>> vbuzzUpdatedFrontend/main
+=======
+                  <span className="text-blue-100"><LiveClock/></span>
+>>>>>>> 7645c6c1e0b490aac565b231c99c7b38cbb3cf04
                 </div>
               </div>
             </div>
