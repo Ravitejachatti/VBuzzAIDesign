@@ -49,7 +49,7 @@ import {
 import DashboardOverview from '../Dashboards/CollegeDashboard/DashboardOverview';
 import ViewStudents from '../Dashboards/CollegeDashboard/Student/ViewStudents';
 import CollegeInfo from '../Dashboards/CollegeDashboard/CollegeInformation';
-import Reports from '../Dashboards/CollegeDashboard/PlacementReports';
+import Reports from '../Dashboards/CollegeDashboard/placement/Reports';
 import JobOpenings from '../Dashboards/CollegeDashboard/JobOpenings';
 import Notices from '../Dashboards/CollegeDashboard/Notices';
 import SettingsPage from '../Dashboards/CollegeDashboard/Settings';
@@ -66,6 +66,8 @@ import { fetchDept } from '../Redux/DepartmentSlice';
 import { fetchProgram } from '../Redux/programs';
 import { fetchStudents } from '../Redux/Placement/StudentsSlice';
 import { fetchColleges } from '../Redux/UniversitySlice';
+import { getAllFaculty } from '../Redux/College/faculty';
+import { fetchJobs } from '../Redux/Jobslice';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -82,6 +84,8 @@ function CollegeDashboard() {
   const [departments, setDepartments] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [students, setStudents] = useState([]);
+  const [faculty, setFaculty ] = useState([])
+  const [jobs, setJobs ] = useState([])
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [load, setLoad] = useState(false);
@@ -92,15 +96,23 @@ function CollegeDashboard() {
   const departmentsData = useSelector((state) => state.department.departments) || [];
   const programsData = useSelector((state) => state.programs.programs) || [];
   const studentsData = useSelector((state) => state.students.students) || [];
+  const facultyData = useSelector((state) => state.faculty.allFaculty) || [];
+  const jobsData = useSelector((state) => state.jobs.jobs || 0 )
+  const openJobs = useSelector((state) => 
+  (state.jobs.jobs || []).filter(job => job.status === 'Open')
+);
+console.log("openjobs ", openJobs)
+  
+  
 
   // Calculate statistics
   const stats = {
     totalStudents: studentsData.length,
     totalDepartments: departmentsData.length,
     totalPrograms: programsData.length,
-    totalFaculty: 45, // This would come from faculty data
+    totalFaculty: facultyData.length, // This would come from faculty data
     placementRate: 85,
-    activeJobs: 12
+    activeJobs: openJobs.length
   };
 
   const fetchCollegesData = async () => {
@@ -187,6 +199,49 @@ function CollegeDashboard() {
     setLoad(false);
   };
 
+  const fetchFaculty = async () => {
+        if (!token) {
+      setError("Authentication token is missing.");
+      return;
+    }
+    setLoad(true);
+        try {
+      const result = await dispatch(getAllFaculty({ token, universityName, BASE_URL }));
+      if (result.meta.requestStatus === "fulfilled") {
+        setError("");
+        setSuccess("faculty fetched successfully.");
+        setFaculty(result.payload);
+      } else {
+        setError("Something went wrong.");
+      }
+    } catch (err) {
+      setError("Failed to fetch faculty.");
+    }
+    setLoad(false);
+
+  }
+
+
+  const fetchjobs = async () => {
+    if(!token) {
+      setError("Authentication token is missing")
+      return
+    }
+    setLoad(true)
+    try{
+      const result = await dispatch( fetchJobs({ token, universityName, BASE_URL}));
+      if(result.meta.requestStatus === "fulfilled"){
+        setError("")
+        setSuccess("JObs fetched successfully")
+        setJobs(result.payload)
+      }else{
+        setError("Something went wrong.")
+      }      
+    }catch(err) {
+      setError("Failed to fetch jobs")
+    }
+  }
+
   useEffect(() => {
     const fetchAll = async () => {
       setIsFetchingAll(true);
@@ -195,6 +250,8 @@ function CollegeDashboard() {
         fetchDepartments(),
         fetchPrograms(),
         handleFetchStudents(),
+        fetchFaculty(),
+        fetchjobs()
       ]);
       setIsFetchingAll(false);
     };
@@ -252,6 +309,8 @@ function CollegeDashboard() {
         departments={departmentsData}
         programs={programsData}
         students={studentsData}
+        faculty={facultyData}
+        activeJobs={openJobs}
       />
     ),
     ViewStudents: (
@@ -275,8 +334,8 @@ function CollegeDashboard() {
         user={user}
       />
     ),
-    CollegeDepart: (<CollegeDepart />),
-    CollegeProgram: (<CollegeProgram />),
+    CollegeDepart: (<CollegeDepart  colleges={collegesData} programs={programsData}  />),
+    CollegeProgram: (<CollegeProgram colleges={collegesData} departments={departmentsData} programs={programsData}/>),
     CollegeNotice: (<CollegeNotice />),
     CollegeJob: (<CollegeJob />),
     AddFaculty: (<AddFaculty />),

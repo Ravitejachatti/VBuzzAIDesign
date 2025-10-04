@@ -4,7 +4,7 @@ import ViewPrograms from './CollegeViewPrograms';
 
 
 
-function CollegeProgram() {
+function Programs({colleges ,departments, programs}) {
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -41,11 +41,11 @@ function CollegeProgram() {
 
             {/* Conditional Rendering */}
             <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '5px' }}>
-                {activeTab === 'add' && <AddProgram />}
-                {activeTab === 'edit' && <ViewPrograms />}
+                {activeTab === 'add' && <AddProgram colleges={colleges}  />}
+                {activeTab === 'edit' && <ViewPrograms colleges={colleges} departments={departments} />}
             </div>
         </div>
     );
 }
 
-export default CollegeProgram;
+export default Programs;

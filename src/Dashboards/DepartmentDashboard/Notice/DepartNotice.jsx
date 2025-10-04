@@ -4,7 +4,7 @@ import Notice from './Notice';
 
 
 
-function DepartNotice() {
+function CollegeNotice() {
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -48,6 +48,6 @@ function DepartNotice() {
     );
 }
 
-export default DepartNotice;
+export default CollegeNotice;
 
 

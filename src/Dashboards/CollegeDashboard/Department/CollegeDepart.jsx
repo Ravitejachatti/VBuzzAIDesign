@@ -1,10 +1,10 @@
-import  { useState } from 'react';
+import React, { useState } from 'react';
 import ManageDepartments from './CollegeAddDepart';
-import DepartmentList from './CollegeListDepart';
+import DepartmentList from './CollegeListDepart'; 
 
 
 
-function CollegeDepart() {
+function Departments({colleges, programs}) {
     const [activeTab, setActiveTab] = useState('add'); // State to track which tab is active
 
     return (
@@ -41,11 +41,11 @@ function CollegeDepart() {
 
             {/* Conditional Rendering */}
             <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '5px' }}>
-                {activeTab === 'add' && <ManageDepartments  />}
-                {activeTab === 'edit' && <DepartmentList />}
+                {activeTab === 'add' && <ManageDepartments colleges={colleges} programs={programs} />}
+                {activeTab === 'edit' && <DepartmentList colleges={colleges} programs={programs}/>}
             </div>
         </div>
     );
 }
 
-export default CollegeDepart;
+export default Departments;
